@@ -1,5 +1,5 @@
 import { supabase } from "../database/supabase.js";
-import { redis } from "../database/redis.js";
+import { redis } from "../redis/redis.js";
 
 export class HealthService {
 
