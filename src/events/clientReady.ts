@@ -12,7 +12,7 @@ export default function (
         activities: [
             {
                 name: "🏆 Defining Minecraft Skill • PrismTiers",
-                type: 0
+                type: 4
             }
         ],
         status: "online"
