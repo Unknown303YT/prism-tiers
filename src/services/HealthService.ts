@@ -6,13 +6,19 @@ export class HealthService {
     async checkDatabase(): Promise<boolean> {
         try {
             const { error } = await supabase
-                .from("settings")
+                .from("players")
                 .select("id")
                 .limit(1);
 
-            return !error;
+            if (error) {
+                console.error("Database health check failed:", error);
+                return false;
+            }
 
-        } catch {
+            return true;
+
+        } catch (error) {
+            console.error("Database connection failed:", error);
             return false;
         }
     }
@@ -25,10 +31,10 @@ export class HealthService {
             }
 
             await redis.ping();
-
             return true;
 
-        } catch {
+        } catch (error) {
+            console.error("Redis health check failed:", error);
             return false;
         }
     }

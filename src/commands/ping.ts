@@ -34,7 +34,7 @@ const command: Command = {
             .addFields(
                 {
                     name: "Discord Latency",
-                    value: `${interaction.client.ws.ping}ms`,
+                    value: interaction.client.ws.ping === -1 ? "Calculating..." : `${interaction.client.ws.ping}ms`,
                     inline: true
                 },
                 {
