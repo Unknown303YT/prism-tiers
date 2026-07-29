@@ -14,16 +14,39 @@ dotenv.config();
 const client = new BotClient();
 
 
-await client.settings.load();
-await verifyRedis();
+async function start() {
+
+    console.log("Starting PrismTiers...");
+
+    try {
+
+        console.log("Loading settings...");
+        await client.settings.load();
+        console.log("Settings loaded.");
+
+        console.log("Checking Redis...");
+        await verifyRedis();
+        console.log("Redis verified.");
+
+        console.log("Loading commands...");
+        await loadCommands(client);
+
+        console.log("Loading events...");
+        await loadEvents(client);
 
 
-await loadCommands(client);
+        await client.login(process.env.TOKEN);
 
-await loadEvents(client);
+    } catch (error) {
+
+        console.error("Failed to start PrismTiers:");
+        console.error(error);
+
+        process.exit(1);
+
+    }
+
+}
 
 
-
-client.login(
-    process.env.TOKEN
-);
+start();
