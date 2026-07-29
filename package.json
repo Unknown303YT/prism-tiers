@@ -1,0 +1,35 @@
+{
+  "name": "prismtiers",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "A modern tier testing discord bot for the Prism SMP.",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "deploy": "tsx src/deploy.ts",
+    "deploy:prod": "node dist/deploy.js"
+  },
+  "keywords": [
+    "discord",
+    "discordjs",
+    "bot",
+    "minecraft",
+    "smp",
+    "prismsmp"
+  ],
+  "author": "Unknown_303YT",
+  "license": "All Rights Reserved",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "dependencies": {
+    "discord.js": "^14.27.0",
+    "dotenv": "^17.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.2",
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2"
+  }
+}
