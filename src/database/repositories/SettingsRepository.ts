@@ -1,5 +1,14 @@
-import { supabase } from "../database/supabase.js";
+import { supabase } from "../supabase.js";
 
+interface RoleConfig {
+    name: string;
+    id: string;
+}
+
+interface ChannelConfig {
+    name: string;
+    id: string;
+}
 
 export class SettingsRepository {
 
