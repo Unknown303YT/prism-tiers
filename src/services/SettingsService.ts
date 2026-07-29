@@ -1,5 +1,5 @@
 import type { BotSettings } from "../types/Settings.js";
-import { SettingsRepository } from "../repositories/SettingsRepository.js";
+import { SettingsRepository } from "../database/repositories/SettingsRepository.js";
 
 
 export class SettingsService {
