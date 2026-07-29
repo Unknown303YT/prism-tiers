@@ -12,9 +12,14 @@ dotenv.config();
 const client = new BotClient();
 
 
+await client.settings.load();
+
+
 await loadCommands(client);
 
 await loadEvents(client);
+
+
 
 client.login(
     process.env.TOKEN

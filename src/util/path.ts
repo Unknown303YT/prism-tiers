@@ -1,11 +1,14 @@
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 
-export const __filename = fileURLToPath(import.meta.url);
+const file = fileURLToPath(import.meta.url);
+const dir = path.dirname(file);
 
-export const __dirname = path.resolve(path.dirname(__filename), "..");
-
-export const isDev = __filename.includes(`${path.sep}src${path.sep}`);
+// If running from dist/, root is dist
+// If running from src/, root is src
+export const __dirname = dir.includes(`${path.sep}dist${path.sep}`)
+    ? path.resolve(dir, "..")        // dist root
+    : path.resolve(dir, "..");       // src root
 
 export function toFileUrl(file: string): string {
     return pathToFileURL(file).href;

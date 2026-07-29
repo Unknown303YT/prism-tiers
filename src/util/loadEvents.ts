@@ -27,7 +27,7 @@ async function getFiles(dir: string): Promise<string[]> {
 }
 
 export async function loadEvents(client: BotClient): Promise<void> {
-    const eventsDir = path.join(__dirname, "..", "events");
+    const eventsDir = path.join(__dirname, "events");
 
     const files = await getFiles(eventsDir);
 

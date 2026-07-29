@@ -27,7 +27,7 @@ async function getFiles(dir: string): Promise<string[]> {
 }
 
 export async function loadCommands(client: BotClient): Promise<void> {
-    const commandsDir = path.join(__dirname, "..", "commands");
+    const commandsDir = path.join(__dirname, "commands");
 
     const files = await getFiles(commandsDir);
 
