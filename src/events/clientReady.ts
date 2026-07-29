@@ -11,7 +11,7 @@ export default function (
     client.user?.setPresence({
         activities: [
             {
-                name: "Tier Testing",
+                name: "🏆 PrismTiers • Defining Minecraft Skill",
                 type: 0
             }
         ],
