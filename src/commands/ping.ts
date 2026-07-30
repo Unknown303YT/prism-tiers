@@ -29,7 +29,7 @@ const command: Command = {
 
 
         const embed = new EmbedBuilder()
-            .setTitle("🏓 PrismTiers Status")
+            .setTitle("🏓 PrismTiers Ping")
             .setColor(database && redis ? 0x57F287 : 0xFEE75C)
             .addFields(
                 {
