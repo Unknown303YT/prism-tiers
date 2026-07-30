@@ -1,54 +1,41 @@
-import { createClient, RedisClientType } from "redis";
-import dotenv from "dotenv";
+import { createClient } from "redis";
 
-dotenv.config();
+const host = process.env.REDIS_HOST;
+const port = process.env.REDIS_PORT;
+const password = process.env.REDIS_PASSWORD;
 
-function requireEnv(name: string): string {
-    const value = process.env[name];
-
-    if (!value) {
-        throw new Error(`Missing environment variable: ${name}`);
-    }
-
-    return value;
+if (!host) {
+    throw new Error("REDIS_HOST is not defined.");
 }
 
-export const redis: RedisClientType = createClient({
+if (!port) {
+    throw new Error("REDIS_PORT is not defined.");
+}
+
+if (!password) {
+    throw new Error("REDIS_PASSWORD is not defined.");
+}
+
+export const redis = createClient({
 
     socket: {
 
-        host: requireEnv("REDIS_HOST"),
+        host,
 
-        port: Number(requireEnv("REDIS_PORT"))
+        port: Number(port)
 
     },
 
-    password: requireEnv("REDIS_PASSWORD")
+    password
 
 });
 
-redis.on("connect", () => {
-    console.log("Connecting to Redis...");
-});
+redis.on("error", console.error);
 
-redis.on("ready", () => {
-    console.log("Connected to Redis.");
-});
-
-redis.on("reconnecting", () => {
-    console.log("Reconnecting to Redis...");
-});
-
-redis.on("error", (error) => {
-    console.error(error);
-});
-
-export async function verifyRedis(): Promise<void> {
+export async function connectRedis() {
 
     if (!redis.isOpen) {
         await redis.connect();
     }
-
-    await redis.ping();
 
 }

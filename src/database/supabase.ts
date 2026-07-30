@@ -1,35 +1,23 @@
 import { createClient } from "@supabase/supabase-js";
-import dotenv from "dotenv";
 
-dotenv.config();
+const url = process.env.SUPABASE_URL;
+const key = process.env.SUPABASE_SECRET_KEY;
 
-
-function env(name: string): string {
-
-    const value = process.env[name];
-
-    if (!value) {
-        throw new Error(
-            `Missing environment variable ${name}`
-        );
-    }
-
-    return value;
-
+if (!url) {
+    throw new Error("SUPABASE_URL is not defined.");
 }
 
+if (!key) {
+    throw new Error("SUPABASE_SECRET_KEY is not defined.");
+}
 
 export const supabase = createClient(
-
-    env("SUPABASE_URL"),
-
-    env("SUPABASE_SECRET_KEY"),
-
+    url,
+    key,
     {
         auth: {
             autoRefreshToken: false,
             persistSession: false
         }
     }
-
 );
