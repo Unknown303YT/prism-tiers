@@ -5,7 +5,7 @@ import { BotClient } from "./structures/BotClient.js";
 import { loadCommands } from "./util/loadCommands.js";
 import { loadEvents } from "./util/loadEvents.js";
 
-import { verifyRedis } from "./redis/redis.js";
+import { connectRedis } from "./redis/redis.js";
 
 
 dotenv.config();
@@ -25,7 +25,7 @@ async function start() {
         console.log("Settings loaded.");
 
         console.log("Checking Redis...");
-        await verifyRedis();
+        await connectRedis();
         console.log("Redis verified.");
 
         console.log("Loading commands...");

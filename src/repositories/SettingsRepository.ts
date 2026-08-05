@@ -2,24 +2,24 @@ import { BaseRepository } from "./BaseRepository.js";
 
 export class SettingsRepository extends BaseRepository {
 
-    public async getRoles(serverId: string): Promise<Record<string, Record<string, string>>> {
+    public async getRoles(): Promise<Record<string, Record<string, Record<string, string>>>> {
 
         const { data, error } = await this.db
             .from("server_roles")
-            .select("type, key, discord_role_id")
-            .eq("server_id", serverId);
+            .select("server_id, type, key, discord_role_id");
 
         if (error) {
             throw error;
         }
 
-        const roles: Record<string, Record<string, string>> = {};
+        const roles: Record<string, Record<string, Record<string, string>>> = {};
 
         for (const row of data) {
 
-            roles[row.type] ??= {};
+            roles[row.server_id] ??= {};
+            roles[row.server_id][row.type] ??= {};
 
-            roles[row.type][row.key] = row.discord_role_id;
+            roles[row.server_id][row.type][row.key] = row.discord_role_id;
 
         }
 
@@ -27,23 +27,29 @@ export class SettingsRepository extends BaseRepository {
 
     }
 
-    public async getChannels(serverId: string): Promise<Record<string, string>> {
+
+    public async getChannels(): Promise<Record<string, Record<string, string>>> {
 
         const { data, error } = await this.db
             .from("server_channels")
-            .select("key, discord_channel_id")
-            .eq("server_id", serverId);
+            .select("server_id, key, discord_channel_id");
 
         if (error) {
             throw error;
         }
 
-        return Object.fromEntries(
-            data.map(channel => [
-                channel.key,
-                channel.discord_channel_id
-            ])
-        );
+
+        const channels: Record<string, Record<string, string>> = {};
+
+        for (const row of data) {
+
+            channels[row.server_id] ??= {};
+
+            channels[row.server_id][row.key] = row.discord_channel_id;
+
+        }
+
+        return channels;
 
     }
 

@@ -1,26 +1,51 @@
 import { SettingsRepository } from "../repositories/SettingsRepository.js";
 
+interface ServerSettings {
+    roles: Record<string, Record<string, string>>;
+    channels: Record<string, string>;
+}
+
+
 export class SettingsService {
 
     private readonly repository = new SettingsRepository();
 
-    public roles: Record<string, string> = {};
 
-    public tierRoles: Record<string, string> = {};
+    public servers: Record<string, ServerSettings> = {};
 
-    public channels: Record<string, string> = {};
 
     public async load(): Promise<void> {
 
-        [
-            this.roles,
-            this.tierRoles,
-            this.channels
+        const [
+            roles,
+            channels
         ] = await Promise.all([
             this.repository.getRoles(),
-            this.repository.getTierRoles(),
             this.repository.getChannels()
         ]);
+
+
+        const serverIds = new Set([
+            ...Object.keys(roles),
+            ...Object.keys(channels)
+        ]);
+
+
+        for (const serverId of serverIds) {
+
+            this.servers[serverId] = {
+                roles: roles[serverId] ?? {},
+                channels: channels[serverId] ?? {}
+            };
+
+        }
+
+    }
+
+
+    public get(serverId: string): ServerSettings {
+
+        return this.servers[serverId];
 
     }
 
