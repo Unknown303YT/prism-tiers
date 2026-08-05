@@ -2,7 +2,6 @@ import { createClient } from "redis";
 
 const host = process.env.REDIS_HOST;
 const port = process.env.REDIS_PORT;
-const password = process.env.REDIS_PASSWORD;
 
 if (!host) {
     throw new Error("REDIS_HOST is not defined.");
@@ -10,10 +9,6 @@ if (!host) {
 
 if (!port) {
     throw new Error("REDIS_PORT is not defined.");
-}
-
-if (!password) {
-    throw new Error("REDIS_PASSWORD is not defined.");
 }
 
 export const redis = createClient({
