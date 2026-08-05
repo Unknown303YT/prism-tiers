@@ -2,49 +2,37 @@ import { BaseRepository } from "./BaseRepository.js";
 
 export class SettingsRepository extends BaseRepository {
 
-    public async getRoles(): Promise<Record<string, string>> {
+    public async getRoles(serverId: string): Promise<Record<string, Record<string, string>>> {
 
         const { data, error } = await this.db
-            .from("discord_roles")
-            .select("name, role_id");
+            .from("server_roles")
+            .select("type, key, discord_role_id")
+            .eq("server_id", serverId);
 
         if (error) {
             throw error;
         }
 
-        return Object.fromEntries(
-            data.map(role => [
-                role.name,
-                role.role_id
-            ])
-        );
+        const roles: Record<string, Record<string, string>> = {};
 
-    }
+        for (const row of data) {
 
-    public async getTierRoles(): Promise<Record<string, string>> {
+            roles[row.type] ??= {};
 
-        const { data, error } = await this.db
-            .from("tier_roles")
-            .select("tier, role_id");
+            roles[row.type][row.key] = row.discord_role_id;
 
-        if (error) {
-            throw error;
         }
 
-        return Object.fromEntries(
-            data.map(role => [
-                role.tier,
-                role.role_id
-            ])
-        );
+        return roles;
 
     }
 
-    public async getChannels(): Promise<Record<string, string>> {
+    public async getChannels(serverId: string): Promise<Record<string, string>> {
 
         const { data, error } = await this.db
-            .from("discord_channels")
-            .select("name, channel_id");
+            .from("server_channels")
+            .select("key, discord_channel_id")
+            .eq("server_id", serverId);
 
         if (error) {
             throw error;
@@ -52,8 +40,8 @@ export class SettingsRepository extends BaseRepository {
 
         return Object.fromEntries(
             data.map(channel => [
-                channel.name,
-                channel.channel_id
+                channel.key,
+                channel.discord_channel_id
             ])
         );
 

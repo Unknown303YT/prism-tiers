@@ -26,8 +26,6 @@ export const redis = createClient({
 
     },
 
-    password
-
 });
 
 redis.on("error", console.error);
