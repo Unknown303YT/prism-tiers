@@ -1,12 +1,9 @@
-import dotenv from "dotenv";
 import fs from "node:fs/promises";
 import path from "node:path";
 
 import { REST, Routes } from "discord.js";
 
 import { __dirname, toFileUrl } from "./util/path.js";
-
-dotenv.config();
 
 async function getFiles(dir: string): Promise<string[]> {
     const entries = await fs.readdir(dir, { withFileTypes: true });

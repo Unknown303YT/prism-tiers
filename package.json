@@ -4,11 +4,11 @@
   "type": "module",
   "description": "A modern tier testing discord bot for the Prism SMP.",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "start": "node dist/index.js",
+    "dev": "tsx watch --env-file=.env src/index.ts",
+    "start": "node --env-file=.env dist/index.js",
     "build": "tsc",
-    "deploy": "tsx src/deploy.ts",
-    "deploy:prod": "node dist/deploy.js"
+    "deploy": "tsx --env-file=.env src/deploy.ts",
+    "deploy:prod": "node --env-file=.env dist/deploy.js"
   },
   "keywords": [
     "discord",
@@ -26,7 +26,6 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.111.0",
     "discord.js": "^14.27.0",
-    "dotenv": "^17.4.2",
     "redis": "^6.1.0"
   },
   "devDependencies": {

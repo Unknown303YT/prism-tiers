@@ -1,15 +1,9 @@
-import dotenv from "dotenv";
-
 import { BotClient } from "./structures/BotClient.js";
 
 import { loadCommands } from "./util/loadCommands.js";
 import { loadEvents } from "./util/loadEvents.js";
 
 import { connectRedis } from "./redis/redis.js";
-
-
-dotenv.config();
-
 
 const client = new BotClient();
 
