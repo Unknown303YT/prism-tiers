@@ -25,10 +25,12 @@ const command: Command = {
         const guild = interaction.guild;
 
         if (!guild) {
-            return interaction.reply({
+            await interaction.reply({
                 content: "This command can only be used in a server.",
                 ephemeral: true
             });
+
+            return;
         }
 
         const server = await setup.start(guild, interaction);
