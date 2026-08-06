@@ -32,14 +32,28 @@ export default async function (client: BotClient, message: Message) {
 
     const waitingFor = setup.getWaitingFor(message.guild.id);
 
-
     if (!waitingFor) {
         return;
     }
 
+    await setup.saveRole(
+        message.guild.id,
+        waitingFor.type,
+        waitingFor.key,
+        role.id
+    );
 
-    await setup.saveRole(message.guild.id, waitingFor.type, waitingFor.key, role.id);
+    if (waitingFor.type === "staff" && waitingFor.key === "admin") {
+        setup.setWaitingFor(
+            message.guild.id,
+            "staff",
+            "tester"
+        );
 
+        await message.reply("Admin role saved.\n\nPlease mention the **Tester** role.");
+    }
 
-    await message.reply("Admin role saved.\n\nPlease mention the **Tester** role.");
+    if (waitingFor.type === "staff" && waitingFor.key === "tester") {
+        await message.reply("Tester role saved.\n\nNext we will set up tier roles.");
+    }
 }

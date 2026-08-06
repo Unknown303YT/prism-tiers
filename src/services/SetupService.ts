@@ -90,7 +90,7 @@ export class SetupService {
         await channel.send({
 
             content:
-                `${user}\nWelcome to PrismTiers setup!\n\nPlease mention the **Admin** role.`
+                `${user}\n# Welcome to PrismTiers setup!\n\nPlease mention the **Admin** role.`
 
         });
 
@@ -110,6 +110,13 @@ export class SetupService {
 
     public getWaitingFor(guildId: string) {
         return this.sessions[guildId]?.waitingFor;
+    }
+
+    public setWaitingFor(guildId: string, type: string, key: string) {
+        this.sessions[guildId].waitingFor = {
+            type,
+            key
+        };
     }
 }
 
