@@ -1,11 +1,17 @@
-import { Guild } from "discord.js";
+import {
+    Guild,
+    ActionRowBuilder,
+    RoleSelectMenuBuilder,
+    Interaction
+} from "discord.js";
 import { ServerRepository } from "../repositories/ServerRepository.js";
 
 export class SetupService {
-    private readonly servers =new ServerRepository();
+    private readonly servers = new ServerRepository();
     private sessions: Record<string, string> = {};
+    private interactions: Record<string, Interaction> = {};
 
-     public async start(guild: Guild) {
+     public async start(guild: Guild, interaction: Interaction) {
          console.log(`Starting PrismTiers setup for ${guild.name} (${guild.id})`);
 
         let server = await this.servers.getByDiscordId(guild.id);
@@ -19,6 +25,7 @@ export class SetupService {
         }
 
         this.sessions[guild.id] = server.id;
+        this.interactions[guild.id] = interaction;
 
         return server;
     }
@@ -34,9 +41,23 @@ export class SetupService {
     }
 
     public async selectRoles(guild: Guild) {
-        const serverId = this.getServerId(guild.id);
+        const interaction = this.interactions[guild.id];
 
-        console.log(`Selecting roles for ${guild.name} (${guild.id})`);
+        if (!interaction) {
+            throw new Error("Setup interaction not found.");
+        }
+
+        await interaction.followUp({
+            content: "Select the admin role:",
+
+            components: [
+                new ActionRowBuilder<RoleSelectMenuBuilder>()
+                    .addComponents(new RoleSelectMenuBuilder()
+                        .setCustomId("setup_admin_role")
+                        .setPlaceholder("Select admin role")
+                    )
+            ]
+        });
     }
 }
 
