@@ -159,38 +159,11 @@ export class SetupService {
             }
         }
 
-        console.log(
-            createdRoles.map(role => ({
-                name: role.name,
-                id: role.id,
-                managed: role.managed,
-                editable: role.editable,
-                position: role.position
-            }))
-        );
-
         for (const role of createdRoles) {
             if (!role.editable) {
                 throw new Error(`Cannot edit role ${role.name}`);
             }
         }
-
-        const orderedRoles = [...createdRoles].reverse();
-
-        console.log({
-            botRole: botRole.name,
-            botPosition: botRole.position,
-            movingRoles: createdRoles.map(r => ({
-                name: r.name,
-                position: r.position
-            }))
-        });
-
-        await guild.roles.setPositions(orderedRoles.map((role, index) => ({
-            role: role.id,
-            position: botRole.position - index - 1
-            }))
-        );
 
         console.log("Tier roles created and ordered.");
 
@@ -213,16 +186,6 @@ export class SetupService {
 
     public async createStaffRoles(guild: Guild) {
         const serverId = this.getServerId(guild.id);
-
-        console.log(
-            "Setup sessions:",
-            this.sessions
-        );
-
-        console.log(
-            "Guild:",
-            guild.id
-        );
 
         console.log(`Creating staff roles for ${guild.id}, database id: ${serverId}`);
 
