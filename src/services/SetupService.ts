@@ -177,6 +177,15 @@ export class SetupService {
 
         const orderedRoles = [...createdRoles].reverse();
 
+        console.log({
+            botRole: botRole.name,
+            botPosition: botRole.position,
+            movingRoles: createdRoles.map(r => ({
+                name: r.name,
+                position: r.position
+            }))
+        });
+
         await guild.roles.setPositions(orderedRoles.map((role, index) => ({
             role: role.id,
             position: botRole.position - index - 1
