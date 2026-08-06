@@ -62,12 +62,12 @@ export default async function (client: BotClient, interaction: Interaction) {
 
                 await new Promise(resolve => setTimeout(resolve, 5000));
 
-                await message.reply("Setup Complete! Deleting in 5 seconds...");
+                await interaction.followUp("Setup Complete! Deleting in 5 seconds...");
 
                 await new Promise(resolve => setTimeout(resolve, 5000));
 
-                await setup.deleteSetupChannel(message.guild);
-                await setup.finish(message.guild.id);
+                await setup.deleteSetupChannel(interaction.guild);
+                await setup.finish(interaction.guild.id);
 
 
             }

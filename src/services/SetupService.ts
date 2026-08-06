@@ -147,7 +147,7 @@ export class SetupService {
         for (const gamemode of WAITLIST_ROLES) {
             const name =`${gamemode} Waitlist`;
 
-            const role = this.getOrCreateRole(guild, {
+            const role = await this.getOrCreateRole(guild, {
                 name: name,
                 hoist: false,
                 reason: "PrismTiers waitlist role"
@@ -169,7 +169,7 @@ export class SetupService {
         }
 
         for (const staffRole of STAFF_ROLES) {
-            const role = this.getOrCreateRole(guild, {
+            const role = await this.getOrCreateRole(guild, {
                 name: staffRole.name,
                 color: staffRole.color,
                 hoist: true,

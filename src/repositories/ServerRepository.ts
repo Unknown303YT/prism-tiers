@@ -57,7 +57,7 @@ export class ServerRepository extends BaseRepository {
     }
 
     public async isSetupComplete(serverId: string) {
-        const { data } = await this.supabase
+        const { data } = await this.db
             .from("servers")
             .select("setup_complete")
             .eq("id", serverId)

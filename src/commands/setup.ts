@@ -8,7 +8,10 @@ import {
 } from "discord.js";
 
 import type { Command } from "../structures/Command.js";
+import { ServerRepository } from "../repositories/ServerRepository.js";
 import { setup } from "../services/SetupService.js";
+
+const servers = new ServerRepository();
 
 const command: Command = {
     data: new SlashCommandBuilder()
@@ -19,9 +22,18 @@ const command: Command = {
         ),
 
     async execute(interaction: ChatInputCommandInteraction) {
+        const guild = interaction.guild;
+
+        if (!guild) {
+            return interaction.reply({
+                content: "This command can only be used in a server.",
+                ephemeral: true
+            });
+        }
+
         const server = await setup.start(guild, interaction);
 
-        if (await servers.isSetupComplete(server.id)) {
+        if (server && await servers.isSetupComplete(server.id)) {
             await interaction.reply({
                 content: "❌ PrismTiers is already setup on this server.",
                 flags: MessageFlags.Ephemeral
@@ -31,6 +43,11 @@ const command: Command = {
         }
 
         await interaction.reply({
+            content: "⚙️ Starting PrismTiers setup...",
+            ephemeral: true
+        });
+
+        await interaction.followUp({
             content: "How would you like to setup PrismTiers?",
 
             components: [
