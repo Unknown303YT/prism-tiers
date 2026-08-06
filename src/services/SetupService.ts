@@ -126,7 +126,7 @@ export class SetupService {
             if (!role) {
                 role = await guild.roles.create({
                         name: tier.name,
-                        color: tier.color,
+                        colors: tier.color,
                         hoist: true,
                         reason:"PrismTiers tier role"
                     });
@@ -139,8 +139,17 @@ export class SetupService {
         }
 
 
-        const botRole = guild.members.me!.roles.highest;
+        const botRole = guild.members.me?.roles.highest;
 
+        if (!botRole) {
+            throw new Error("Bot role not found.");
+        }
+
+        for (const role of createdRoles) {
+            if (role.position >= botRole.position) {
+                throw new Error(`Cannot move role ${role.name}. Bot role is too low.`);
+            }
+        }
 
         await guild.roles.setPositions(
             createdRoles.map((role, index) => ({
@@ -175,7 +184,7 @@ export class SetupService {
             if (!role) {
                 role = await guild.roles.create({
                         name: staffRole.name,
-                        color: staffRole.color,
+                        colors: staffRole.color,
                         hoist: true,
                         reason:"PrismTiers staff role"
                     });
