@@ -1,31 +1,31 @@
 export const TIER_ROLES = [
     {
         name: "S Tier",
-        color: "#ff0000"
+        color: 0xff0000
     },
     {
         name: "A Tier",
-        color: "#ff8000"
+        color: 0xff8000
     },
     {
         name: "B Tier",
-        color: "#ffff00"
+        color: 0xffff00
     },
     {
         name: "C Tier",
-        color: "#00ff00"
+        color: 0x00ff00
     },
     {
         name: "D Tier",
-        color: "#00ffff"
+        color: 0x00ffff
     },
     {
         name: "E Tier",
-        color: "#0080ff"
+        color: 0x0080ff
     },
     {
         name: "F Tier",
-        color: "#8000ff"
+        color: 0x8000ff
     }
 ] as const;
 
@@ -44,11 +44,11 @@ export const STAFF_ROLES = [
     {
         key: "admin",
         name: "PrismTiers Admin",
-        color: "#9B59B6"
+        color: 0x9B59B6
     },
     {
         key: "tester",
         name: "Tier Tester",
-        color: "#3498DB"
+        color: 0x3498DB
     }
 ] as const;
