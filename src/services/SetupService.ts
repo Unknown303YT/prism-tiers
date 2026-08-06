@@ -3,30 +3,39 @@ import { ServerRepository } from "../repositories/ServerRepository.js";
 
 export class SetupService {
     private readonly servers =new ServerRepository();
+    private sessions: Record<string, string> = {};
 
-    public async start(guild: Guild) {
-        console.log(`Starting PrismTiers setup for ${guild.name} (${guild.id})`);
+     public async start(guild: Guild) {
+         console.log(`Starting PrismTiers setup for ${guild.name} (${guild.id})`);
 
-        const server = await this.servers.getByDiscordId(guild.id);
+        let server = await this.servers.getByDiscordId(guild.id);
 
-        if (server) {
+        if (!server) {
+            server = await this.servers.create(guild.id,guild.name);
+
+            console.log(`Created server ${server.id}`);
+        } else {
             console.log(`Found existing server ${server.id}`);
-
-            return server;
         }
 
-        const created = await this.servers.create(guild.id, guild.name);
+        this.sessions[guild.id] = server.id;
 
-        console.log(`Created server ${created.id}`);
+        return server;
+    }
 
-        return created;
+    public getServerId(guildId: string) {
+        return this.sessions[guildId];
     }
 
     public async createRoles(guild: Guild) {
-        console.log(`Creating roles for ${guild.name} (${guild.id})`);
+        const serverId = this.getServerId(guild.id);
+
+        console.log(`Creating roles for ${guild.name} (${serverId})`);
     }
 
     public async selectRoles(guild: Guild) {
-        console.log(`Selecting existing roles for ${guild.name} (${guild.id})`);
+        const serverId = this.getServerId(guild.id);
+
+        console.log(`Selecting roles for ${guild.name} (${guild.id})`);
     }
 }

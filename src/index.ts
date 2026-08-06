@@ -7,13 +7,10 @@ import { connectRedis } from "./redis/redis.js";
 
 const client = new BotClient();
 
-
 async function start() {
-
     console.log("Starting PrismTiers...");
 
     try {
-
         console.log("Loading settings...");
         await client.settings.load();
         console.log("Settings loaded.");
@@ -32,15 +29,11 @@ async function start() {
         await client.login(process.env.TOKEN);
 
     } catch (error) {
-
         console.error("Failed to start PrismTiers:");
         console.error(error);
 
         process.exit(1);
-
     }
-
 }
-
 
 start();
