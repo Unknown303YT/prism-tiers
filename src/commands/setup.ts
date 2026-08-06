@@ -8,13 +8,11 @@ import {
 } from "discord.js";
 
 import type { Command } from "../structures/Command.js";
+import { SetupService } from "../services/SetupService.js";
 
-import { ServerService } from "../services/ServerService.js";
-
-const servers = new ServerService();
+const setup = new SetupService();
 
 const command: Command = {
-
     data: new SlashCommandBuilder()
         .setName("setup")
         .setDescription("Sets up PrismTiers for this server")
@@ -22,11 +20,14 @@ const command: Command = {
             PermissionFlagsBits.Administrator
         ),
 
-
     async execute(interaction: ChatInputCommandInteraction) {
+        console.log(
+            `Starting setup for ${interaction.guild!.name} (${interaction.guild!.id})`
+        );
+
+    await setup.start(interaction.guild!);
 
         await interaction.reply({
-
             content: "How would you like to setup PrismTiers?",
 
             components: [
@@ -47,14 +48,9 @@ const command: Command = {
                             )
                     )
             ],
-
             flags: MessageFlags.Ephemeral
-
         });
-
     }
-
 };
-
 
 export default command;

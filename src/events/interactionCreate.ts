@@ -45,12 +45,16 @@ export default async function (client: BotClient, interaction: Interaction) {
 
             });
 
+            if (!interaction.guild) {
+                return;
+            }
+
             if (interaction.values[0] === "create") {
-                await setup.createRoles();
+                await setup.createRoles(interaction.guild);
             }
 
             if (interaction.values[0] === "existing") {
-                await setup.selectRoles();
+                await setup.selectRoles(interaction.guild);
             }
         }
     }
