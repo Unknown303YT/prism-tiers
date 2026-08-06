@@ -16,10 +16,10 @@ export class SetupService {
         serverId: string;
         interaction: ChatInputCommandInteraction;
         setupChannelId?: string;
-    }> = {};
-    private waitingFor: Record<string, {
-        type: string;
-        key: string;
+        waitingFor?: {
+            type: string;
+            key: string;
+        };
     }> = {};
 
      public async start(guild: Guild, interaction: ChatInputCommandInteraction) {
@@ -82,10 +82,17 @@ export class SetupService {
         });
 
         this.sessions[guild.id].setupChannelId = channel.id;
+        this.sessions[guild.id].waitingFor = {
+            type: "staff",
+            key: "admin"
+        };
 
-        await channel.send(
-            "Welcome to PrismTiers setup!\n\nPlease mention the **Admin** role."
-        );
+        await channel.send({
+
+            content:
+                `${user}\nWelcome to PrismTiers setup!\n\nPlease mention the **Admin** role.`
+
+        });
 
         return channel;
     }
@@ -102,7 +109,7 @@ export class SetupService {
     }
 
     public getWaitingFor(guildId: string) {
-        return this.waitingFor[guildId];
+        return this.sessions[guildId]?.waitingFor;
     }
 }
 
