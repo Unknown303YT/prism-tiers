@@ -1,6 +1,9 @@
 import type { Interaction } from "discord.js";
+import { MessageFlags } from "discord.js";
 import type { BotClient } from "../structures/BotClient.js";
+import { SetupService } from "../services/SetupService.js";
 
+const setup = new SetupService();
 
 export default async function (client: BotClient, interaction: Interaction) {
     if (interaction.isChatInputCommand()) {
@@ -19,12 +22,12 @@ export default async function (client: BotClient, interaction: Interaction) {
             if (interaction.replied) {
                 await interaction.followUp({
                     content: "An error occurred.",
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 });
             } else {
                 await interaction.reply({
                     content: "An error occurred.",
-                    ephemeral: true
+                    flags: MessageFlags.Ephemeral
                 });
             }
         }
@@ -34,12 +37,21 @@ export default async function (client: BotClient, interaction: Interaction) {
     if (interaction.isStringSelectMenu()) {
         if (interaction.customId === "setup_role_mode") {
             await interaction.update({
+
                 content:
-                    interaction.values[0] === "create"
-                        ? "Creating PrismTiers roles..."
-                        : "Selecting existing roles...",
+                    "Starting setup...",
+
                 components: []
+
             });
+
+            if (interaction.values[0] === "create") {
+                await setup.createRoles();
+            }
+
+            if (interaction.values[0] === "existing") {
+                await setup.selectRoles();
+            }
         }
     }
 }

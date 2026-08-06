@@ -10,28 +10,19 @@ import { SettingsService } from "../services/SettingsService.js";
 
 
 export class BotClient extends Client {
-
-
     public commands =
         new Collection<string, Command>();
-
 
     public settings =
         new SettingsService();
 
-
-
     constructor() {
-
         super({
-
             intents: [
-                GatewayIntentBits.Guilds
+                GatewayIntentBits.Guilds,
+                GatewayIntentBits.GuildMembers,
+                GatewayIntentBits.GuildVoiceStates
             ]
-
         });
-
     }
-
-
 }

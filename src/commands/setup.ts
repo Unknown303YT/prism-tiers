@@ -3,7 +3,8 @@ import {
     PermissionFlagsBits,
     SlashCommandBuilder,
     ActionRowBuilder,
-    StringSelectMenuBuilder
+    StringSelectMenuBuilder,
+    MessageFlags
 } from "discord.js";
 
 import type { Command } from "../structures/Command.js";
@@ -47,7 +48,7 @@ const command: Command = {
                     )
             ],
 
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
 
         });
 
