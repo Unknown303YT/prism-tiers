@@ -32,6 +32,8 @@ const command: Command = {
             interaction.guild!.name
         );
 
+        await servers.completeSetup(server.id);
+
 
         await interaction.editReply(
             `Server registered: ${server.id}`
