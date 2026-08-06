@@ -7,7 +7,8 @@ import {
     User,
     ButtonBuilder,
     ButtonStyle,
-    ActionRowBuilder
+    ActionRowBuilder,
+    Role
 } from "discord.js";
 import { ServerRepository } from "../repositories/ServerRepository.js";
 import { RoleRepository } from "../repositories/RoleRepository.js";
@@ -118,7 +119,7 @@ export class SetupService {
     }
 
     public async createTierRoles(guild: Guild) {
-        const createdRoles = [];
+        const createdRoles: Role[] = [];
 
         for (const tier of TIER_ROLES) {
             let role = guild.roles.cache.find(existing => existing.name === tier.name);
@@ -132,10 +133,13 @@ export class SetupService {
                     });
             }
 
+            if (!role) {
+                throw new Error(`Failed to create or find role ${tier.name}`);
+            }
 
             await this.saveRole(guild.id, "tier", tier.name, role.id);
 
-            createdRoles.push(await guild.roles.fetch(role.id));
+            createdRoles.push(role);
         }
 
 
@@ -172,7 +176,7 @@ export class SetupService {
         await guild.roles.setPositions(
             createdRoles.map((role, index) => ({
                 role: role.id,
-                position: botRole.position - index - 1
+                position: botRole.position - createdRoles.length + index
             }))
         );
 
