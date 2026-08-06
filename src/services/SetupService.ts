@@ -170,12 +170,11 @@ export class SetupService {
 
     }
 
-        await guild.roles.setPositions(
-            createdRoles.map((role, index) => ({
-                role: role.id,
-                position: botRole.position - index - 1
-            }))
-        );
+    await guild.roles.setPositions(createdRoles.map((role, index) => ({
+        role: role.id,
+        position: botRole.position - createdRoles.length + index
+        }))
+    );
 
         console.log("Tier roles created and ordered.");
 
