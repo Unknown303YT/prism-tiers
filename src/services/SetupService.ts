@@ -151,6 +151,25 @@ export class SetupService {
             }
         }
 
+        console.log(
+            createdRoles.map(role => ({
+                name: role.name,
+                id: role.id,
+                managed: role.managed,
+                editable: role.editable,
+                position: role.position
+            }))
+        );
+
+        for (const role of createdRoles) {
+            if (!role.editable) {
+                throw new Error(
+                    `Cannot edit role ${role.name}`
+                );
+        }
+
+    }
+
         await guild.roles.setPositions(
             createdRoles.map((role, index) => ({
                 role: role.id,
