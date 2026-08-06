@@ -56,7 +56,10 @@ export default async function (client: BotClient, interaction: Interaction) {
             }
 
             if (interaction.values[0] === "existing") {
-                await setup.selectRoles(interaction.guild);
+                await setup.createSetupChannel(
+                    interaction.guild,
+                    interaction.user
+                );
             }
         }
     }

@@ -1,9 +1,10 @@
 import {
     Guild,
-    ActionRowBuilder,
-    RoleSelectMenuBuilder,
     ChatInputCommandInteraction,
-    MessageFlags
+    MessageFlags,
+    ChannelType,
+    PermissionFlagsBits,
+    User
 } from "discord.js";
 import { ServerRepository } from "../repositories/ServerRepository.js";
 import { RoleRepository } from "../repositories/RoleRepository.js";
@@ -14,6 +15,7 @@ export class SetupService {
     private sessions: Record<string, {
         serverId: string;
         interaction: ChatInputCommandInteraction;
+        setupChannelId?: string;
     }> = {};
     private waitingFor: Record<string, {
         type: string;
@@ -45,29 +47,49 @@ export class SetupService {
         return this.sessions[guildId]?.serverId;
     }
 
+    public async createSetupChannel(guild: Guild, user: User) {
+        const channel = await guild.channels.create({
+            name: "prismtiers-setup",
+            type: ChannelType.GuildText,
+
+            permissionOverwrites: [
+                {
+                    id: guild.roles.everyone.id,
+                    deny: [
+                        PermissionFlagsBits.ViewChannel
+                    ]
+                },
+                {
+                    id: user.id,
+                    allow: [
+                        PermissionFlagsBits.ViewChannel,
+                        PermissionFlagsBits.SendMessages
+                    ]
+                },
+                {
+                    id: guild.members.me!.id,
+                    allow: [
+                        PermissionFlagsBits.ViewChannel,
+                        PermissionFlagsBits.SendMessages,
+                        PermissionFlagsBits.ManageChannels
+                    ]
+                }
+            ]
+        });
+
+        this.sessions[guild.id].setupChannelId = channel.id;
+
+        await channel.send(
+            "Welcome to PrismTiers setup!\n\nPlease mention the **Admin** role."
+        );
+
+        return channel;
+    }
+
     public async createRoles(guild: Guild) {
         const serverId = this.getServerId(guild.id);
 
         console.log(`Creating roles for ${guild.name} (${serverId})`);
-    }
-
-    public async selectRoles(guild: Guild) {
-        const interaction = this.sessions[guild.id]?.interaction;
-
-        if (!interaction) {
-            throw new Error("Setup interaction not found.");
-        }
-
-        this.waitingFor[guild.id] = {
-            type: "staff",
-            key: "admin"
-        };
-
-        await interaction.followUp({
-            content:
-                "Please mention the **Admin** role in this chat.",
-            flags: MessageFlags.Ephemeral
-        });
     }
 
     public async saveRole(guildId: string, type: string, key: string, roleId: string) {
