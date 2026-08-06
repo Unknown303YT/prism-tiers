@@ -127,7 +127,9 @@ export class SetupService {
             if (!role) {
                 role = await guild.roles.create({
                         name: tier.name,
-                        color: tier.color,
+                        colors: {
+                            primaryColor: tier.color
+                        },
                         hoist: true,
                         reason:"PrismTiers tier role"
                     });
@@ -173,10 +175,11 @@ export class SetupService {
             }
         }
 
-        await guild.roles.setPositions(
-            createdRoles.map((role, index) => ({
-                role: role.id,
-                position: botRole.position - createdRoles.length + index
+        const orderedRoles = [...createdRoles].reverse();
+
+        await guild.roles.setPositions(orderedRoles.map((role, index) => ({
+            role: role.id,
+            position: botRole.position - index - 1
             }))
         );
 
@@ -226,7 +229,9 @@ export class SetupService {
             if (!role) {
                 role = await guild.roles.create({
                         name: staffRole.name,
-                        color: staffRole.color,
+                        colors: {
+                            primaryColor: staffRole.color
+                        },
                         hoist: true,
                         reason:"PrismTiers staff role"
                     });
@@ -238,6 +243,11 @@ export class SetupService {
 
     public async saveRole(guildId: string, type: string, key: string, roleId: string) {
         const serverId = this.getServerId(guildId);
+
+        if (!serverId) {
+            throw new Error("No active setup session found.");
+        }
+
         return this.roles.create(serverId, type, key, roleId);
     }
 
