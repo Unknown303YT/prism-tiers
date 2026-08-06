@@ -178,6 +178,26 @@ export class SetupService {
     }
 
     public async createStaffRoles(guild: Guild) {
+        const serverId = this.getServerId(guild.id);
+
+        console.log(
+            "Setup sessions:",
+            this.sessions
+        );
+
+        console.log(
+            "Guild:",
+            guild.id
+        );
+
+        console.log(`Creating staff roles for ${guild.id}, database id: ${serverId}`);
+
+        if (!serverId) {
+            throw new Error(
+                "No active setup session found."
+            );
+        }
+
         for (const staffRole of STAFF_ROLES) {
             let role = guild.roles.cache.find(existing =>existing.name === staffRole.name);
 
