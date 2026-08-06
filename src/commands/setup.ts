@@ -32,7 +32,7 @@ const command: Command = {
                 new ActionRowBuilder<StringSelectMenuBuilder>()
                     .addComponents(
                         new StringSelectMenuBuilder()
-                            .setCustomId(`setup_role_mode:${interaction.user.id}`)
+                            .setCustomId("setup_role_mode")
                             .setPlaceholder("Select setup method")
                             .addOptions(
                                 {
