@@ -1,9 +1,9 @@
-import type {
-    Interaction,
+import type { Interaction } from "discord.js";
+import {
+    MessageFlags,
     ActionRowBuilder,
     RoleSelectMenuBuilder
 } from "discord.js";
-import { MessageFlags } from "discord.js";
 import type { BotClient } from "../structures/BotClient.js";
 import { setup } from "../services/SetupService.js";
 
