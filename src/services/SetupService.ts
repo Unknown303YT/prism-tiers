@@ -2,16 +2,16 @@ import {
     Guild,
     ActionRowBuilder,
     RoleSelectMenuBuilder,
-    Interaction
+    ChatInputCommandInteraction
 } from "discord.js";
 import { ServerRepository } from "../repositories/ServerRepository.js";
 
 export class SetupService {
     private readonly servers = new ServerRepository();
     private sessions: Record<string, string> = {};
-    private interactions: Record<string, Interaction> = {};
+    private interactions: Record<string, ChatInputCommandInteraction> = {};
 
-     public async start(guild: Guild, interaction: Interaction) {
+     public async start(guild: Guild, interaction: ChatInputCommandInteraction) {
          console.log(`Starting PrismTiers setup for ${guild.name} (${guild.id})`);
 
         let server = await this.servers.getByDiscordId(guild.id);
