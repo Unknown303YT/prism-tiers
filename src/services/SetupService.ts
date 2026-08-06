@@ -8,6 +8,7 @@ import {
 } from "discord.js";
 import { ServerRepository } from "../repositories/ServerRepository.js";
 import { RoleRepository } from "../repositories/RoleRepository.js";
+import { TIER_ROLES } from "../constants/roles.js";
 
 export class SetupService {
     private readonly servers = new ServerRepository();
@@ -101,6 +102,28 @@ export class SetupService {
         const serverId = this.getServerId(guild.id);
 
         console.log(`Creating roles for ${guild.name} (${serverId})`);
+    }
+
+    public async createTierRoles(guild: Guild) {
+        console.log(`Creating tier roles for ${guild.name}`);
+
+        for (const tier of TIER_ROLES) {
+            const existing =
+                guild.roles.cache.find(
+                    role => role.name === tier.name
+                );
+
+            if (existing) {
+                continue;
+            }
+
+            await guild.roles.create({
+                name: tier.name,
+                color: tier.color,
+                hoist: true,
+                reason: "PrismTiers tier role"
+            });
+        }
     }
 
     public async saveRole(guildId: string, type: string, key: string, roleId: string) {
