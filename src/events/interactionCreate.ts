@@ -1,4 +1,8 @@
-import type { Interaction } from "discord.js";
+import type {
+    Interaction,
+    ActionRowBuilder,
+    RoleSelectMenuBuilder
+} from "discord.js";
 import { MessageFlags } from "discord.js";
 import type { BotClient } from "../structures/BotClient.js";
 import { setup } from "../services/SetupService.js";
@@ -54,6 +58,25 @@ export default async function (client: BotClient, interaction: Interaction) {
             if (interaction.values[0] === "existing") {
                 await setup.selectRoles(interaction.guild);
             }
+        }
+    }
+
+    if (interaction.isRoleSelectMenu()) {
+        if (interaction.customId === "setup_admin_role") {
+            await setup.saveRole(interaction.guild!.id,"staff","admin",interaction.values[0]);
+
+            await interaction.update({
+                content:"Admin role saved. Select the tester role:",
+
+                components: [
+                    new ActionRowBuilder<RoleSelectMenuBuilder>()
+                        .addComponents(
+                            new RoleSelectMenuBuilder()
+                                .setCustomId("setup_tester_role")
+                                .setPlaceholder("Select tester role")
+                        )
+                ]
+            });
         }
     }
 }

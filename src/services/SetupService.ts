@@ -6,9 +6,11 @@ import {
     MessageFlags
 } from "discord.js";
 import { ServerRepository } from "../repositories/ServerRepository.js";
+import { RoleRepository } from "../repositories/RoleRepository.js";
 
 export class SetupService {
     private readonly servers = new ServerRepository();
+    private readonly roles = new RoleRepository();
     private sessions: Record<string, string> = {};
     private interactions: Record<string, ChatInputCommandInteraction> = {};
 
@@ -60,6 +62,11 @@ export class SetupService {
             ],
             flags: MessageFlags.Ephemeral
         });
+    }
+
+    public async saveRole(guildId: string, type: string, key: string, roleId: string) {
+        const serverId = this.getServerId(guildId);
+        return this.roles.create(serverId, type, key, roleId);
     }
 }
 
