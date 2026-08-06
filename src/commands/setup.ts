@@ -19,11 +19,7 @@ const command: Command = {
         ),
 
     async execute(interaction: ChatInputCommandInteraction) {
-        console.log(
-            `Starting setup for ${interaction.guild!.name} (${interaction.guild!.id})`
-        );
-
-    await setup.start(interaction.guild!);
+        await setup.start(interaction.guild!);
 
         await interaction.reply({
             content: "How would you like to setup PrismTiers?",
