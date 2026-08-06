@@ -2,7 +2,8 @@ import {
     Guild,
     ActionRowBuilder,
     RoleSelectMenuBuilder,
-    ChatInputCommandInteraction
+    ChatInputCommandInteraction,
+    MessageFlags
 } from "discord.js";
 import { ServerRepository } from "../repositories/ServerRepository.js";
 
@@ -56,7 +57,8 @@ export class SetupService {
                         .setCustomId("setup_admin_role")
                         .setPlaceholder("Select admin role")
                     )
-            ]
+            ],
+            flags: MessageFlags.Ephemeral
         });
     }
 }
