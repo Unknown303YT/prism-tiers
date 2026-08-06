@@ -1,6 +1,6 @@
 {
   "name": "prismtiers",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "type": "module",
   "description": "A modern tier testing discord bot for the Prism SMP.",
   "scripts": {

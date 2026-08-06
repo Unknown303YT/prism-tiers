@@ -27,7 +27,7 @@ const command: Command = {
         if (!guild) {
             await interaction.reply({
                 content: "This command can only be used in a server.",
-                ephemeral: true
+                flags: MessageFlags.Ephemeral
             });
 
             return;
@@ -46,7 +46,7 @@ const command: Command = {
 
         await interaction.reply({
             content: "⚙️ Starting PrismTiers setup...",
-            ephemeral: true
+            flags: MessageFlags.Ephemeral
         });
 
         await interaction.followUp({
@@ -60,7 +60,7 @@ const command: Command = {
                             .setPlaceholder("Select setup method")
                             .addOptions(
                                 {
-                                    label: "Create PrismTiers roles",
+                                    label: "Create new roles",
                                     value: "create"
                                 },
                                 {

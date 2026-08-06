@@ -69,7 +69,7 @@ export default async function (client: BotClient, interaction: Interaction) {
                 await setup.deleteSetupChannel(interaction.guild);
                 await setup.finish(interaction.guild.id);
 
-
+                await interaction.deleteReply();
             }
 
             if (interaction.values[0] === "existing") {
