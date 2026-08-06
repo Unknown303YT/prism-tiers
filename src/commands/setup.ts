@@ -6,6 +6,9 @@ import {
 
 import type { Command } from "../structures/Command.js";
 
+import { ServerService } from "../services/ServerService.js";
+
+const servers = new ServerService();
 
 const command: Command = {
 
@@ -24,8 +27,14 @@ const command: Command = {
         });
 
 
+        const server = await servers.setup(
+            interaction.guild!.id,
+            interaction.guild!.name
+        );
+
+
         await interaction.editReply(
-            "Setup coming soon."
+            `Server registered: ${server.id}`
         );
 
     }
