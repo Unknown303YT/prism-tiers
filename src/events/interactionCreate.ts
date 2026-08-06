@@ -39,12 +39,8 @@ export default async function (client: BotClient, interaction: Interaction) {
     if (interaction.isStringSelectMenu()) {
         if (interaction.customId === "setup_role_mode") {
             await interaction.update({
-
-                content:
-                    "Starting setup...",
-
+                content: "Starting setup...",
                 components: []
-
             });
 
             if (!interaction.guild) {
@@ -60,9 +56,20 @@ export default async function (client: BotClient, interaction: Interaction) {
                 await setup.createWaitlistRoles(interaction.guild);
 
                 await interaction.followUp({
-                    content:"Roles created successfully.",
-                    flags:MessageFlags.Ephemeral
+                    content: "Roles created successfully.",
+                    flags: MessageFlags.Ephemeral
                 });
+
+                await new Promise(resolve => setTimeout(resolve, 5000));
+
+                await message.reply("Setup Complete! Deleting in 5 seconds...");
+
+                await new Promise(resolve => setTimeout(resolve, 5000));
+
+                await setup.deleteSetupChannel(message.guild);
+                await setup.finish(message.guild.id);
+
+
             }
 
             if (interaction.values[0] === "existing") {

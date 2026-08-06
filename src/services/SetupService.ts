@@ -122,18 +122,12 @@ export class SetupService {
         const createdRoles: Role[] = [];
 
         for (const tier of TIER_ROLES) {
-            let role = guild.roles.cache.find(existing => existing.name === tier.name);
-
-            if (!role) {
-                role = await guild.roles.create({
-                        name: tier.name,
-                        colors: {
-                            primaryColor: tier.color
-                        },
-                        hoist: true,
-                        reason:"PrismTiers tier role"
-                    });
-            }
+            const role = await this.getOrCreateRole(guild, {
+                name: tier.name,
+                color: tier.color,
+                hoist: true,
+                reason: "PrismTiers tier role"
+            });
 
             if (!role) {
                 throw new Error(`Failed to create or find role ${tier.name}`);
@@ -144,28 +138,7 @@ export class SetupService {
             createdRoles.push(role);
         }
 
-
-        await guild.roles.fetch();
-        const botMember = await guild.members.fetchMe();
-        const botRole = botMember.roles.highest;
-
-        if (!botRole) {
-            throw new Error("Bot role not found.");
-        }
-
-        for (const role of createdRoles) {
-            if (role.position >= botRole.position) {
-                throw new Error(`Cannot move role ${role.name}. Bot role is too low.`);
-            }
-        }
-
-        for (const role of createdRoles) {
-            if (!role.editable) {
-                throw new Error(`Cannot edit role ${role.name}`);
-            }
-        }
-
-        console.log("Tier roles created and ordered.");
+        console.log("Tier roles created");
 
         return createdRoles;
     }
@@ -174,11 +147,11 @@ export class SetupService {
         for (const gamemode of WAITLIST_ROLES) {
             const name =`${gamemode} Waitlist`;
 
-            let role = guild.roles.cache.find(role => role.name === name);
-
-            if (!role) {
-                role = await guild.roles.create({name, hoist: false, reason: "PrismTiers waitlist role"});
-            }
+            const role = this.getOrCreateRole(guild, {
+                name: name,
+                hoist: false,
+                reason: "PrismTiers waitlist role"
+            });
 
             await this.saveRole(guild.id, "waitlist", gamemode, role.id);
         }
@@ -196,21 +169,37 @@ export class SetupService {
         }
 
         for (const staffRole of STAFF_ROLES) {
-            let role = guild.roles.cache.find(existing =>existing.name === staffRole.name);
-
-            if (!role) {
-                role = await guild.roles.create({
-                        name: staffRole.name,
-                        colors: {
-                            primaryColor: staffRole.color
-                        },
-                        hoist: true,
-                        reason:"PrismTiers staff role"
-                    });
-            }
+            const role = this.getOrCreateRole(guild, {
+                name: staffRole.name,
+                color: staffRole.color,
+                hoist: true,
+                reason: "PrismTiers staff role"
+            });
 
             await this.saveRole(guild.id!, "staff", staffRole.key, role.id);
         }
+    }
+
+    private async getOrCreateRole(guild: Guild, options: {
+            name: string;
+            color?: number;
+            hoist?: boolean;
+            reason: string;
+        }): Promise<Role> {
+        let role = guild.roles.cache.find(existing => existing.name === options.name);
+
+        if (!role) {
+            role = await guild.roles.create({
+                name: options.name,
+                colors: options.color
+                    ? { primaryColor: options.color }
+                    : undefined,
+                hoist: options.hoist ?? false,
+                reason: options.reason
+            });
+        }
+
+        return role;
     }
 
     public async saveRole(guildId: string, type: string, key: string, roleId: string) {
@@ -245,13 +234,15 @@ export class SetupService {
     }
 
     public async finish(guildId: string) {
-        const session =this.sessions[guildId];
+        const session = this.sessions[guildId];
 
         if (!session) {
             return;
         }
 
         delete this.sessions[guildId];
+
+        await this.servers.completeSetup(session.serverId);
 
         return session.setupChannelId;
     }

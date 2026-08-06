@@ -60,5 +60,14 @@ export default async function (client: BotClient, message: Message) {
         await setup.createWaitlistRoles(message.guild);
 
         await message.reply("Tier and Waitlist roles created. You may want to re-order them.");
+
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        await message.reply("Setup Complete! Deleting in 5 seconds...");
+
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        await setup.deleteSetupChannel(message.guild);
+        await setup.finish(message.guild.id);
     }
 }

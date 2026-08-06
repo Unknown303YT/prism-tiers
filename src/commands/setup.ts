@@ -19,7 +19,16 @@ const command: Command = {
         ),
 
     async execute(interaction: ChatInputCommandInteraction) {
-        await setup.start(interaction.guild!, interaction);
+        const server = await setup.start(guild, interaction);
+
+        if (await servers.isSetupComplete(server.id)) {
+            await interaction.reply({
+                content: "❌ PrismTiers is already setup on this server.",
+                flags: MessageFlags.Ephemeral
+            });
+
+            return;
+        }
 
         await interaction.reply({
             content: "How would you like to setup PrismTiers?",

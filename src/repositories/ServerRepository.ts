@@ -55,4 +55,14 @@ export class ServerRepository extends BaseRepository {
 
         return data;
     }
+
+    public async isSetupComplete(serverId: string) {
+        const { data } = await this.supabase
+            .from("servers")
+            .select("setup_complete")
+            .eq("id", serverId)
+            .single();
+
+        return data?.setup_complete ?? false;
+    }
 }
