@@ -126,7 +126,7 @@ export class SetupService {
             if (!role) {
                 role = await guild.roles.create({
                         name: tier.name,
-                        colors: tier.color,
+                        color: tier.color,
                         hoist: true,
                         reason:"PrismTiers tier role"
                     });
@@ -184,7 +184,7 @@ export class SetupService {
             if (!role) {
                 role = await guild.roles.create({
                         name: staffRole.name,
-                        colors: staffRole.color,
+                        color: staffRole.color,
                         hoist: true,
                         reason:"PrismTiers staff role"
                     });
