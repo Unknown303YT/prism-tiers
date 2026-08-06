@@ -44,6 +44,12 @@ export class SetupService {
     }
 
     public async selectRoles(guild: Guild) {
+        for (const role of guild.roles.cache.values()) {
+            console.log(
+                `${role.name} | ${role.id} | managed=${role.managed} | position=${role.position}`
+            );
+        }
+
         const interaction = this.interactions[guild.id];
 
         if (!interaction) {
