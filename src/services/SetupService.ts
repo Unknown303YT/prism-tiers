@@ -11,8 +11,14 @@ import { RoleRepository } from "../repositories/RoleRepository.js";
 export class SetupService {
     private readonly servers = new ServerRepository();
     private readonly roles = new RoleRepository();
-    private sessions: Record<string, string> = {};
-    private interactions: Record<string, ChatInputCommandInteraction> = {};
+    private sessions: Record<string, {
+        serverId: string;
+        interaction: ChatInputCommandInteraction;
+    }> = {};
+    private waitingFor: Record<string, {
+        type: string;
+        key: string;
+    }> = {};
 
      public async start(guild: Guild, interaction: ChatInputCommandInteraction) {
          console.log(`Starting PrismTiers setup for ${guild.name} (${guild.id})`);
@@ -27,14 +33,16 @@ export class SetupService {
             console.log(`Found existing server ${server.id}`);
         }
 
-        this.sessions[guild.id] = server.id;
-        this.interactions[guild.id] = interaction;
+        this.sessions[guild.id] = {
+            serverId: server.id,
+            interaction
+        };
 
         return server;
     }
 
     public getServerId(guildId: string) {
-        return this.sessions[guildId];
+        return this.sessions[guildId]?.serverId;
     }
 
     public async createRoles(guild: Guild) {
@@ -44,28 +52,20 @@ export class SetupService {
     }
 
     public async selectRoles(guild: Guild) {
-        for (const role of guild.roles.cache.values()) {
-            console.log(
-                `${role.name} | ${role.id} | managed=${role.managed} | position=${role.position}`
-            );
-        }
-
-        const interaction = this.interactions[guild.id];
+        const interaction = this.sessions[guild.id]?.interaction;
 
         if (!interaction) {
             throw new Error("Setup interaction not found.");
         }
 
-        await interaction.followUp({
-            content: "Select the admin role:",
+        this.waitingFor[guild.id] = {
+            type: "staff",
+            key: "admin"
+        };
 
-            components: [
-                new ActionRowBuilder<RoleSelectMenuBuilder>()
-                    .addComponents(new RoleSelectMenuBuilder()
-                        .setCustomId("setup_admin_role")
-                        .setPlaceholder("Select admin role")
-                    )
-            ],
+        await interaction.followUp({
+            content:
+                "Please mention the **Admin** role in this chat.",
             flags: MessageFlags.Ephemeral
         });
     }
@@ -73,6 +73,10 @@ export class SetupService {
     public async saveRole(guildId: string, type: string, key: string, roleId: string) {
         const serverId = this.getServerId(guildId);
         return this.roles.create(serverId, type, key, roleId);
+    }
+
+    public getWaitingFor(guildId: string) {
+        return this.waitingFor[guildId];
     }
 }
 
