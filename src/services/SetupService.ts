@@ -133,7 +133,7 @@ export class SetupService {
             }
 
 
-            await saveRole(guild.id, "tier", tier.name, role.id);
+            await this.saveRole(guild.id, "tier", tier.name, role.id);
 
             createdRoles.push(role);
         }
@@ -164,7 +164,7 @@ export class SetupService {
                 role = await guild.roles.create({name, hoist: false, reason: "PrismTiers waitlist role"});
             }
 
-            await saveRole(guild.id, "waitlist", gamemode, role.id);
+            await this.saveRole(guild.id, "waitlist", gamemode, role.id);
         }
     }
 
@@ -181,7 +181,7 @@ export class SetupService {
                     });
             }
 
-            await saveRole(guild.id!, "staff", staffRole.key, role.id);
+            await this.saveRole(guild.id!, "staff", staffRole.key, role.id);
         }
     }
 
