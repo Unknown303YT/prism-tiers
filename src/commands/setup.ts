@@ -3,8 +3,7 @@ import {
     PermissionFlagsBits,
     SlashCommandBuilder,
     ActionRowBuilder,
-    StringSelectMenuBuilder,
-    StringSelectMenuInteraction
+    StringSelectMenuBuilder
 } from "discord.js";
 
 import type { Command } from "../structures/Command.js";
@@ -33,7 +32,7 @@ const command: Command = {
                 new ActionRowBuilder<StringSelectMenuBuilder>()
                     .addComponents(
                         new StringSelectMenuBuilder()
-                            .setCustomId("setup_role_mode")
+                            .setCustomId(`setup_role_mode:${interaction.user.id}`)
                             .setPlaceholder("Select setup method")
                             .addOptions(
                                 {
@@ -51,42 +50,6 @@ const command: Command = {
             ephemeral: true
 
         });
-
-        const response =
-            await interaction.fetchReply();
-
-
-        const collector =
-            response.createMessageComponentCollector({
-
-                time: 60000
-
-            });
-
-
-        collector.on(
-            "collect",
-            async (component: StringSelectMenuInteraction) => {
-
-                if (component.customId !== "setup_role_mode") {
-                    return;
-                }
-
-
-                await component.update({
-
-                    content:
-                        component.values[0] === "create"
-                            ? "Creating PrismTiers roles..."
-                            : "Selecting existing roles...",
-
-                    components: []
-
-                });
-
-            }
-        );
-
 
     }
 
