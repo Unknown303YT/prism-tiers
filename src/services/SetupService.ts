@@ -4,11 +4,18 @@ import {
     MessageFlags,
     ChannelType,
     PermissionFlagsBits,
-    User
+    User,
+    ButtonBuilder,
+    ButtonStyle,
+    ActionRowBuilder
 } from "discord.js";
 import { ServerRepository } from "../repositories/ServerRepository.js";
 import { RoleRepository } from "../repositories/RoleRepository.js";
-import { TIER_ROLES } from "../constants/roles.js";
+import {
+    TIER_ROLES,
+    WAITLIST_ROLES,
+    STAFF_ROLES
+} from "../constants/roles.js";
 
 export class SetupService {
     private readonly servers = new ServerRepository();
@@ -89,40 +96,92 @@ export class SetupService {
         };
 
         await channel.send({
+            content: `${user}`
+        });
 
-            content:
-                `${user}\n# Welcome to PrismTiers setup!\n\nPlease mention the **Admin** role.`
+        await channel.send({
 
+            content:`# Welcome to PrismTiers setup!\n\nPlease mention the **Admin** role.`,
+
+            components: [
+                new ActionRowBuilder<ButtonBuilder>()
+                    .addComponents(
+                        new ButtonBuilder()
+                            .setCustomId("setup_cancel")
+                            .setLabel("Cancel Setup")
+                            .setStyle(ButtonStyle.Danger)
+                    )
+            ]
         });
 
         return channel;
     }
 
-    public async createRoles(guild: Guild) {
-        const serverId = this.getServerId(guild.id);
-
-        console.log(`Creating roles for ${guild.name} (${serverId})`);
-    }
-
     public async createTierRoles(guild: Guild) {
-        console.log(`Creating tier roles for ${guild.name}`);
+        const createdRoles = [];
 
         for (const tier of TIER_ROLES) {
-            const existing =
-                guild.roles.cache.find(
-                    role => role.name === tier.name
-                );
+            let role = guild.roles.cache.find(existing => existing.name === tier.name);
 
-            if (existing) {
-                continue;
+            if (!role) {
+                role = await guild.roles.create({
+                        name: tier.name,
+                        color: tier.color,
+                        hoist: true,
+                        reason:"PrismTiers tier role"
+                    });
             }
 
-            await guild.roles.create({
-                name: tier.name,
-                color: tier.color,
-                hoist: true,
-                reason: "PrismTiers tier role"
-            });
+
+            await saveRole(guild.id, "tier", tier.name, role.id);
+
+            createdRoles.push(role);
+        }
+
+
+        const botRole = guild.members.me!.roles.highest;
+
+
+        await guild.roles.setPositions(
+            createdRoles.map((role, index) => ({
+                role: role.id,
+                position: botRole.position - index - 1
+            }))
+        );
+
+        console.log("Tier roles created and ordered.");
+
+        return createdRoles;
+    }
+
+    public async createWaitlistRoles(guild: Guild) {
+        for (const gamemode of WAITLIST_ROLES) {
+            const name =`${gamemode} Waitlist`;
+
+            let role = guild.roles.cache.find(role => role.name === name);
+
+            if (!role) {
+                role = await guild.roles.create({name, hoist: false, reason: "PrismTiers waitlist role"});
+            }
+
+            await saveRole(guild.id, "waitlist", gamemode, role.id);
+        }
+    }
+
+    public async createStaffRoles(guild: Guild) {
+        for (const staffRole of STAFF_ROLES) {
+            let role = guild.roles.cache.find(existing =>existing.name === staffRole.name);
+
+            if (!role) {
+                role = await guild.roles.create({
+                        name: staffRole.name,
+                        color: staffRole.color,
+                        hoist: true,
+                        reason:"PrismTiers staff role"
+                    });
+            }
+
+            await saveRole(guild.id!, "staff", staffRole.key, role.id);
         }
     }
 
@@ -140,6 +199,40 @@ export class SetupService {
             type,
             key
         };
+    }
+
+    public async cancel(guildId: string) {
+        const session = this.sessions[guildId];
+
+        if (!session) {
+            return;
+        }
+
+        delete this.sessions[guildId];
+    }
+
+    public async finish(guildId: string) {
+        const session =this.sessions[guildId];
+
+        if (!session) {
+            return;
+        }
+
+        delete this.sessions[guildId];
+
+        return session.setupChannelId;
+    }
+
+    public async deleteSetupChannel(guild: Guild) {
+        const channelId = this.sessions[guild.id]?.setupChannelId;
+
+        if (!channelId) {
+            return;
+        }
+
+        const channel = guild.channels.cache.get(channelId);
+
+        await channel?.delete();
     }
 }
 

@@ -52,7 +52,17 @@ export default async function (client: BotClient, interaction: Interaction) {
             }
 
             if (interaction.values[0] === "create") {
-                await setup.createRoles(interaction.guild);
+                await setup.createStaffRoles(interaction.guild);
+
+                await setup.createTierRoles(interaction.guild);
+
+
+                await setup.createWaitlistRoles(interaction.guild);
+
+                await interaction.followUp({
+                    content:"Roles created successfully.",
+                    flags:MessageFlags.Ephemeral
+                });
             }
 
             if (interaction.values[0] === "existing") {
@@ -64,22 +74,20 @@ export default async function (client: BotClient, interaction: Interaction) {
         }
     }
 
-    if (interaction.isRoleSelectMenu()) {
-        if (interaction.customId === "setup_admin_role") {
-            await setup.saveRole(interaction.guild!.id,"staff","admin",interaction.values[0]);
+    if (interaction.isButton()) {
+        if (interaction.customId === "setup_cancel") {
+            if (!interaction.guild) {
+                return;
+            }
 
-            await interaction.update({
-                content:"Admin role saved. Select the tester role:",
-
-                components: [
-                    new ActionRowBuilder<RoleSelectMenuBuilder>()
-                        .addComponents(
-                            new RoleSelectMenuBuilder()
-                                .setCustomId("setup_tester_role")
-                                .setPlaceholder("Select tester role")
-                        )
-                ]
+            await interaction.reply({
+                content:"Setup cancelled.",
+                flags: MessageFlags.Ephemeral
             });
+
+            setup.deleteSetupChannel(interaction.guild);
+
+            setup.cancel(interaction.guild.id);
         }
     }
 }

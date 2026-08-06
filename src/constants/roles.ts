@@ -28,3 +28,27 @@ export const TIER_ROLES = [
         color: "#8000ff"
     }
 ] as const;
+
+export const WAITLIST_ROLES = [
+    "Sword",
+    "Crystal",
+    "UHC",
+    "SMP",
+    "Mace",
+    "DiaPot",
+    "Axe",
+    "DiaSMP",
+    "Spear Mace"
+] as const;
+export const STAFF_ROLES = [
+    {
+        key: "admin",
+        name: "PrismTiers Admin",
+        color: "#9B59B6"
+    },
+    {
+        key: "tester",
+        name: "Tier Tester",
+        color: "#3498DB"
+    }
+] as const;

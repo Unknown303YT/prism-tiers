@@ -54,8 +54,11 @@ export default async function (client: BotClient, message: Message) {
     }
 
     if (waitingFor.type === "staff" && waitingFor.key === "tester") {
-        await setup.createTierRoles(message.guild);
+        await message.reply("Tester role saved.");
 
-        await message.reply("Tester role saved.\n\nTier roles created.");
+        await setup.createTierRoles(message.guild);
+        await setup.createWaitlistRoles(message.guild);
+
+        await message.reply("Tier and Waitlist roles created. You may want to re-order them.");
     }
 }
