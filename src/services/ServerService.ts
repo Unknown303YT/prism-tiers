@@ -16,6 +16,6 @@ export class ServerService {
     }
 
     public async completeSetup(id: string) {
-        return await this.repository.completeSetup(id);
+        return this.repository.completeSetup(id);
     }
 }
