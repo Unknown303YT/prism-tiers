@@ -6,12 +6,9 @@ import {
 
 import type { Command } from "../structures/Command.js";
 import { HealthService } from "../services/HealthService.js";
-
+import { VERSION } from "../constants/version.js"
 
 const health = new HealthService();
-
-
-const VERSION = "1.0.0";
 
 
 const command: Command = {

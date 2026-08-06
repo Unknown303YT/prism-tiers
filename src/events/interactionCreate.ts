@@ -62,7 +62,10 @@ export default async function (client: BotClient, interaction: Interaction) {
 
                 await new Promise(resolve => setTimeout(resolve, 5000));
 
-                await interaction.followUp("Setup Complete! Deleting in 5 seconds...");
+                await interaction.followUp({
+                    content: "Setup Complete! Deleting in 5 seconds...",
+                    flags: MessageFlags.Ephemeral
+                });
 
                 await new Promise(resolve => setTimeout(resolve, 5000));
 
