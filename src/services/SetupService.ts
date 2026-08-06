@@ -135,11 +135,13 @@ export class SetupService {
 
             await this.saveRole(guild.id, "tier", tier.name, role.id);
 
-            createdRoles.push(role);
+            createdRoles.push(await guild.roles.fetch(role.id));
         }
 
 
-        const botRole = guild.members.me?.roles.highest;
+        await guild.roles.fetch();
+        const botMember = await guild.members.fetchMe();
+        const botRole = botMember.roles.highest;
 
         if (!botRole) {
             throw new Error("Bot role not found.");
@@ -163,18 +165,16 @@ export class SetupService {
 
         for (const role of createdRoles) {
             if (!role.editable) {
-                throw new Error(
-                    `Cannot edit role ${role.name}`
-                );
+                throw new Error(`Cannot edit role ${role.name}`);
+            }
         }
 
-    }
-
-    await guild.roles.setPositions(createdRoles.map((role, index) => ({
-        role: role.id,
-        position: botRole.position - createdRoles.length + index
-        }))
-    );
+        await guild.roles.setPositions(
+            createdRoles.map((role, index) => ({
+                role: role.id,
+                position: botRole.position - index - 1
+            }))
+        );
 
         console.log("Tier roles created and ordered.");
 
