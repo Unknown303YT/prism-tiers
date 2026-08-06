@@ -47,6 +47,10 @@ export class SetupService {
         return this.sessions[guildId]?.serverId;
     }
 
+    public getSetupChannelId(guildId: string) {
+        return this.sessions[guildId]?.setupChannelId;
+    }
+
     public async createSetupChannel(guild: Guild, user: User) {
         const channel = await guild.channels.create({
             name: "prismtiers-setup",
