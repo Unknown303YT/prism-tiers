@@ -25,9 +25,7 @@ export default async function (client: BotClient, message: Message) {
     const role = message.mentions.roles.first();
 
     if (!role) {
-        await message.reply(
-            "Please mention a role."
-        );
+        await message.reply("Please mention a role.");
 
         return;
     }
