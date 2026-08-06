@@ -39,3 +39,5 @@ export class SetupService {
         console.log(`Selecting roles for ${guild.name} (${guild.id})`);
     }
 }
+
+export const setup = new SetupService();

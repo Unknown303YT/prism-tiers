@@ -8,9 +8,7 @@ import {
 } from "discord.js";
 
 import type { Command } from "../structures/Command.js";
-import { SetupService } from "../services/SetupService.js";
-
-const setup = new SetupService();
+import { setup } from "../services/SetupService.js";
 
 const command: Command = {
     data: new SlashCommandBuilder()

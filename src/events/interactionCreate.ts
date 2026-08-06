@@ -1,9 +1,7 @@
 import type { Interaction } from "discord.js";
 import { MessageFlags } from "discord.js";
 import type { BotClient } from "../structures/BotClient.js";
-import { SetupService } from "../services/SetupService.js";
-
-const setup = new SetupService();
+import { setup } from "../services/SetupService.js";
 
 export default async function (client: BotClient, interaction: Interaction) {
     if (interaction.isChatInputCommand()) {
