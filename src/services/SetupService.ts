@@ -8,19 +8,29 @@ import {
     ButtonBuilder,
     ButtonStyle,
     ActionRowBuilder,
-    Role
+    Role,
+    CategoryChannel
 } from "discord.js";
+
 import { ServerRepository } from "../repositories/ServerRepository.js";
 import { RoleRepository } from "../repositories/RoleRepository.js";
+import { ChannelRepository } from "../repositories/ChannelRepository.js";
+
 import {
     TIER_ROLES,
     WAITLIST_ROLES,
     STAFF_ROLES
 } from "../constants/roles.js";
 
+import {
+    CATEGORIES,
+    CHANNELS
+} from "../constants/channels.js"
+
 export class SetupService {
     private readonly servers = new ServerRepository();
     private readonly roles = new RoleRepository();
+    private readonly channels = new ChannelRepository();
     private sessions: Record<string, {
         serverId: string;
         interaction: ChatInputCommandInteraction;
@@ -257,6 +267,83 @@ export class SetupService {
         const channel = guild.channels.cache.get(channelId);
 
         await channel?.delete();
+    }
+
+    public async createCategories(guild: Guild) {
+        const categories: Record<string, CategoryChannel> = {};
+
+        for (const category of CATEGORIES) {
+            const created = await this.getOrCreateCategory(
+                guild,
+                category.key,
+                category.name
+            );
+
+            categories[category.key] = created;
+        }
+
+        return categories;
+    }
+
+    public async createChannels(guild: Guild, categories: Record<string, CategoryChannel>) {
+        for (const channel of CHANNELS) {
+            await this.getOrCreateChannel(
+                guild,
+                channel.key,
+                channel.name,
+                channel.type,
+                categories[channel.category].id
+            );
+        }
+    }
+
+    private async saveChannel(guildId: string, type: string, key: string, channelId: string) {
+        const serverId = this.getServerId(guildId);
+
+        if (!serverId) {
+            throw new Error("No active setup session found.");
+        }
+
+        return this.channels.create(serverId, type, key, channelId);
+    }
+
+    private async getOrCreateCategory(guild: Guild, key: string, name: string) {
+        let category = guild.channels.cache.find(channel => channel.type === ChannelType.GuildCategory && channel.name === name)
+            as CategoryChannel | undefined;
+
+        if (!category) {
+            category = await guild.channels.create({
+                name,
+                type: ChannelType.GuildCategory,
+                reason: "PrismTiers setup"
+            });
+        }
+
+        await this.saveChannel(
+            guild.id,
+            "category",
+            key,
+            category.id
+        );
+
+        return category;
+    }
+
+    private async getOrCreateChannel(guild: Guild, key: string, name: string, type: ChannelType, parent?: string) {
+        let channel = guild.channels.cache.find(existing => existing.name === name && existing.type === type);
+
+        if (!channel) {
+            channel = await guild.channels.create({
+                name,
+                type,
+                parent,
+                reason: "PrismTiers setup"
+            });
+        }
+
+        await this.saveChannel(guild.id, "channel", key, channel.id);
+
+        return channel;
     }
 }
 
