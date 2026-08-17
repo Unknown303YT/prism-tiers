@@ -1,3 +1,5 @@
+import { ChannelType } from "discord.js";
+
 export const CATEGORIES = [
     {
         key: "information",
