@@ -5,7 +5,7 @@ import { loadEvents } from "./util/loadEvents.js";
 
 import { connectRedis } from "./redis/redis.js";
 
-const client = new BotClient();
+export const client = new BotClient();
 
 async function start() {
     console.log("Starting PrismTiers...");
