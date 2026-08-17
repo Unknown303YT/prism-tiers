@@ -307,16 +307,17 @@ export class SetupService {
         return this.channels.create(serverId, type, key, channelId);
     }
 
-    private async getOrCreateCategory(guild: Guild, key: string, name: string) {
-        let category = guild.channels.cache.find(channel => channel.type === ChannelType.GuildCategory && channel.name === name)
-            as CategoryChannel | undefined;
+    private async getOrCreateCategory(guild: Guild, key: string, name: string): Promise<CategoryChannel> {
+        let category = guild.channels.cache.find(
+            channel => channel.type === ChannelType.GuildCategory && channel.name === name
+        ) as CategoryChannel | undefined;
 
         if (!category) {
             category = await guild.channels.create({
                 name,
                 type: ChannelType.GuildCategory,
                 reason: "PrismTiers setup"
-            });
+            }) as CategoryChannel;
         }
 
         await this.saveChannel(
@@ -329,7 +330,7 @@ export class SetupService {
         return category;
     }
 
-    private async getOrCreateChannel(guild: Guild, key: string, name: string, type: ChannelType, parent?: string) {
+    private async getOrCreateChannel(guild: Guild, key: string, name: string, type: ChannelType.GuildText | ChannelType.GuildVoice | ChannelType.GuildCategory | ChannelType.GuildAnnouncement | ChannelType.GuildStageVoice | ChannelType.GuildDirectory | ChannelType.GuildForum | ChannelType.GuildMedia, parent?: string) {
         let channel = guild.channels.cache.find(existing => existing.name === name && existing.type === type);
 
         if (!channel) {
