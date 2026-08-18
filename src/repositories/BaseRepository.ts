@@ -1,9 +1,5 @@
-import { SupabaseClient } from "@supabase/supabase-js";
-
-import { supabase } from "../database/supabase.js";
+import { database } from "../database/Database.js";
 
 export abstract class BaseRepository {
-
-    protected readonly db: SupabaseClient = supabase;
-
+    protected readonly db = database;
 }

@@ -1,11 +1,11 @@
-import { supabase } from "../database/supabase.js";
+import { database } from "../database/Database.js";
 import { redis } from "../redis/redis.js";
 
 export class HealthService {
 
     async checkDatabase(): Promise<boolean> {
         try {
-            const { error } = await supabase
+            const { error } = await database
                 .from("players")
                 .select("id")
                 .limit(1);

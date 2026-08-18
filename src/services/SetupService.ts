@@ -1,7 +1,6 @@
 import {
     Guild,
     ChatInputCommandInteraction,
-    MessageFlags,
     ChannelType,
     PermissionFlagsBits,
     User,
@@ -41,13 +40,28 @@ export class SetupService {
         };
     }> = {};
 
-     public async start(guild: Guild, interaction: ChatInputCommandInteraction) {
-         console.log(`Starting PrismTiers setup for ${guild.name} (${guild.id})`);
+    public async start(guild: Guild, interaction: ChatInputCommandInteraction) {
+        console.log(`Starting PrismTiers setup for ${guild.name} (${guild.id})`);
 
-        let server = await this.servers.getByDiscordId(guild.id);
+        const existingServer = await this.servers.getByDiscordId(guild.id);
+
+        if (existingServer.error) {
+            throw existingServer.error;
+        }
+
+        let server = existingServer.data;
 
         if (!server) {
-            server = await this.servers.create(guild.id,guild.name);
+            const createdServer = await this.servers.create(
+                guild.id,
+                guild.name
+            );
+
+            if (createdServer.error || !createdServer.data) {
+                throw new Error("Failed to create or load server.");
+            }
+
+            server = createdServer.data;
 
             console.log(`Created server ${server.id}`);
         } else {

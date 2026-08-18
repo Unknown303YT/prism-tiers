@@ -21,7 +21,7 @@ export class ChannelRepository extends BaseRepository {
     }
 
     public async get(serverId: string, type: string, key: string) {
-        const { data, error } = await this.db
+        const data = await this.db
             .from("server_channels")
             .select("*")
             .eq("server_id", serverId)
@@ -29,8 +29,8 @@ export class ChannelRepository extends BaseRepository {
             .eq("key", key)
             .single();
 
-        if (error && error.code !== "PGRST116") {
-            throw error;
+        if (!data) {
+            throw new Error("Channel not found");
         }
 
         return data;

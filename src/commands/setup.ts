@@ -35,7 +35,7 @@ const command: Command = {
 
         const server = await setup.start(guild, interaction);
 
-        if (server && await servers.isSetupComplete(server.id)) {
+        if (server && "data" in server && server.data && await servers.isSetupComplete(server.data.id)) {
             await interaction.reply({
                 content: "❌ PrismTiers is already setup on this server.",
                 flags: MessageFlags.Ephemeral

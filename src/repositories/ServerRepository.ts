@@ -3,14 +3,14 @@ import { BaseRepository } from "./BaseRepository.js";
 
 export class ServerRepository extends BaseRepository {
     public async getByDiscordId(discordGuildId: string) {
-        const { data, error } = await this.db
+        const data = await this.db
             .from("servers")
             .select("*")
             .eq("discord_guild_id", discordGuildId)
             .single();
 
-        if (error && error.code !== "PGRST116") {
-            throw error;
+        if (!data) {
+            throw new Error("Discord server not found");
         }
 
         return data;
