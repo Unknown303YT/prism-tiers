@@ -46,7 +46,7 @@ class MessageFormService {
             if (typeof form.finishForm === "function") {
                 const channel = await client.channels.fetch(form.channelId);
                 if (channel && channel.isTextBased()) {
-                    const messageableChannel = MessageForm.asMessageableChannel(channel);
+                    const messageableChannel = MessageForm.asSendableChannel(channel);
                     await form.finishForm(messageableChannel);
                 } else
                     throw new Error(`Channel ${form.channelId} either not found or not text based`);
@@ -60,4 +60,4 @@ class MessageFormService {
     }
 }
 
-export const messageFormHandler = new MessageFormHandler();
+export const messageFormHandler = new MessageFormService();
