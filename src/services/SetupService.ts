@@ -94,7 +94,8 @@ export class SetupService {
                     allow: [
                         PermissionFlagsBits.ViewChannel,
                         PermissionFlagsBits.SendMessages,
-                        PermissionFlagsBits.ManageChannels
+                        PermissionFlagsBits.ManageChannels,
+                        PermissionFlagsBits.Administrator
                     ]
                 }
             ]
@@ -287,12 +288,14 @@ export class SetupService {
 
     public async createChannels(guild: Guild, categories: Record<string, CategoryChannel>) {
         for (const channel of CHANNELS) {
+            const type = channel.type as CreateableChannelType;
+
             await this.getOrCreateChannel(
                 guild,
                 channel.key,
                 channel.name,
-                channel.type,
-                categories[channel.category].id
+                type,
+                categories[channel.category]?.id
             );
         }
     }
@@ -330,11 +333,19 @@ export class SetupService {
         return category;
     }
 
-    private async getOrCreateChannel(guild: Guild, key: string, name: string, type: ChannelType.GuildText | ChannelType.GuildVoice | ChannelType.GuildCategory | ChannelType.GuildAnnouncement | ChannelType.GuildStageVoice | ChannelType.GuildDirectory | ChannelType.GuildForum | ChannelType.GuildMedia, parent?: string) {
-        let channel = guild.channels.cache.find(existing => existing.name === name && existing.type === type);
+    private async getOrCreateChannel(
+        guild: Guild,
+        key: string,
+        name: string,
+        type: CreateableChannelType,
+        parent?: string
+    ) {
+        let existing = guild.channels.cache.find(
+            c => c.name === name && c.type === type
+        );
 
-        if (!channel) {
-            channel = await guild.channels.create({
+        if (!existing) {
+            existing = await guild.channels.create({
                 name,
                 type,
                 parent,
@@ -342,10 +353,20 @@ export class SetupService {
             });
         }
 
-        await this.saveChannel(guild.id, "channel", key, channel.id);
+        await this.saveChannel(guild.id, "channel", key, existing.id);
 
-        return channel;
+        return existing;
     }
 }
 
 export const setup = new SetupService();
+
+type CreateableChannelType =
+    | ChannelType.GuildText
+    | ChannelType.GuildVoice
+    | ChannelType.GuildCategory
+    | ChannelType.GuildAnnouncement
+    | ChannelType.GuildStageVoice
+    | ChannelType.GuildDirectory
+    | ChannelType.GuildForum
+    | ChannelType.GuildMedia;
