@@ -1,6 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
+import { closeDatabase } from "./database/mariadb.js";
+
 import { REST, Routes } from "discord.js";
 
 import { __dirname, toFileUrl } from "./util/path.js";
@@ -47,3 +49,5 @@ await rest.put(
 );
 
 console.log(`Deployed ${commands.length} commands.`);
+
+await closeDatabase();

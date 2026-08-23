@@ -25,3 +25,7 @@ export const db = mariadb.createPool({
     database,
     connectionLimit: 5,
 });
+
+export async function closeDatabase() {
+    await db.end();
+}
