@@ -27,7 +27,15 @@ export class QueryBuilder {
 
     public select(columns = "*") {
         this.operation = "select";
-        this.columns = columns;
+
+        if (columns === "*") {
+            this.columns = columns;
+        } else {
+            this.columns = columns
+                .split(",")
+                .map(column => `\`${column.trim()}\``)
+                .join(", ");
+        }
 
         this.shouldReturn = true;
 
