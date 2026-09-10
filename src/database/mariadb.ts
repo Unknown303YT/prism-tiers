@@ -28,6 +28,7 @@ export const db = mariadb.createPool({
     password,
     database,
     connectionLimit: 5,
+    multipleStatements: true
 });
 
 export async function initializeDatabase() {
@@ -36,7 +37,8 @@ export async function initializeDatabase() {
         host,
         port: dbPort,
         user,
-        password
+        password,
+        multipleStatements: true
     });
 
     try {
