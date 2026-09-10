@@ -10,6 +10,9 @@ export class RoleRepository extends BaseRepository {
                 key,
                 discord_role_id: roleId
             })
+            .eq("server_id", serverId)
+            .eq("type", type)
+            .eq("key", key)
             .select()
             .single();
 

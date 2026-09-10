@@ -219,14 +219,30 @@ export class QueryBuilder {
             };
         }
 
-        const rows = await this.getInsertedRows(
-            result,
-            values.length
-        );
+        if (columns.includes("id")) {
+            const ids = values
+                .map(value => value.id)
+                .filter(id => id !== undefined);
+
+            if (ids.length === values.length) {
+                const rows = await db.query(
+                    `SELECT * FROM \`${this.table}\`
+                     WHERE id IN (${ids.map(() => "?").join(", ")})`,
+                    ids
+                );
+
+                return {
+                    data: this.shouldReturnSingle ? rows[0] : rows,
+                    error: null
+                };
+            }
+        }
 
         return {
-            data: this.shouldReturnSingle ? rows[0] : rows,
-            error: null
+            data: null,
+            error: {
+                code: "RETURN_FAILED"
+            }
         };
     }
 
@@ -234,6 +250,10 @@ export class QueryBuilder {
         const values = this.values as Record<string, unknown>;
 
         const columns = Object.keys(values);
+
+        if (columns.length === 0) {
+            throw new Error("Cannot update with empty values.");
+        }
 
         const setSql = columns
             .map(column => `\`${column}\` = ?`)
@@ -264,8 +284,24 @@ export class QueryBuilder {
             where.parameters
         );
 
+        if (this.shouldReturnSingle) {
+            if (rows.length === 0) {
+                return {
+                    data: null,
+                    error: {
+                        code: "NOT_FOUND"
+                    }
+                };
+        }
+
+            return {
+                data: rows[0],
+                error: null
+            };
+        }
+
         return {
-            data: this.shouldReturnSingle ? rows[0] : rows,
+            data: rows,
             error: null
         };
     }
@@ -319,11 +355,50 @@ export class QueryBuilder {
             ${updateSql}
         `;
 
-        const result = await db.query(sql, parameters);
+        await db.query(sql, parameters);
+
+        if (!this.shouldReturn) {
+            return {
+                data: null,
+                error: null
+            };
+        }
+
+        const where = this.buildWhere();
+
+        if (where.sql) {
+            const rows = await db.query(
+                `SELECT * FROM \`${this.table}\`${where.sql}`,
+                where.parameters
+            );
+
+            if (this.shouldReturnSingle) {
+                if (rows.length === 0) {
+                    return {
+                        data: null,
+                        error: {
+                            code: "NOT_FOUND"
+                        }
+                    };
+                }
+
+                return {
+                    data: rows[0],
+                    error: null
+                };
+            }
+
+            return {
+                data: rows,
+                error: null
+            };
+        }
 
         return {
-            data: result,
-            error: null
+            data: null,
+            error: {
+                code: "RETURN_FAILED"
+            }
         };
     }
 

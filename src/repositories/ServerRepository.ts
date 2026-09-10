@@ -1,18 +1,20 @@
+import { randomUUID } from "node:crypto";
+
 import { BaseRepository } from "./BaseRepository.js";
 
 
 export class ServerRepository extends BaseRepository {
     public async getByDiscordId(discordGuildId: string) {
-        const data = await this.db
+        const { data, error } = await this.db
             .from("servers")
             .select("*")
             .eq("discord_guild_id", discordGuildId)
             .single();
 
-        if (!data) {
-            throw new Error("Discord server not found");
+        if (error) {
+            throw error;
         }
-
+        
         return data;
     }
 
@@ -23,6 +25,7 @@ export class ServerRepository extends BaseRepository {
             .from("servers")
             .insert({
 
+                id: randomUUID(),
                 discord_guild_id: discordGuildId,
                 name,
                 setup_complete: false
