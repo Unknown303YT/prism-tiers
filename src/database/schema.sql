@@ -1,10 +1,3 @@
-CREATE DATABASE IF NOT EXISTS prismtiers
-    CHARACTER SET utf8mb4
-    COLLATE utf8mb4_unicode_ci;
-
-USE prismtiers;
-
-
 CREATE TABLE IF NOT EXISTS servers (
     id CHAR(36) NOT NULL,
     discord_guild_id VARCHAR(20) NOT NULL,

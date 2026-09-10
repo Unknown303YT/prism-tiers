@@ -4,6 +4,7 @@ import { loadCommands } from "./util/loadCommands.js";
 import { loadEvents } from "./util/loadEvents.js";
 
 import { connectRedis } from "./redis/redis.js";
+import { initializeDatabase } from "./database/mariadb.js";
 
 export const client = new BotClient();
 
@@ -11,6 +12,10 @@ async function start() {
     console.log("Starting PrismTiers...");
 
     try {
+        console.log("Connecting to database...");
+        await initializeDatabase();
+        console.log("Database initialized.");
+
         console.log("Loading settings...");
         await client.settings.load();
         console.log("Settings loaded.");
