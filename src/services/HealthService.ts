@@ -5,18 +5,8 @@ export class HealthService {
 
     async checkDatabase(): Promise<boolean> {
         try {
-            const { error } = await database
-                .from("players")
-                .select("id")
-                .limit(1);
-
-            if (error) {
-                console.error("Database health check failed:", error);
-                return false;
-            }
-
+            await database.query('SELECT 1');
             return true;
-
         } catch (error) {
             console.error("Database connection failed:", error);
             return false;
