@@ -45,23 +45,13 @@ export class SetupService {
 
         const existingServer = await this.servers.getByDiscordId(guild.id);
 
-        if (existingServer.error) {
-            throw existingServer.error;
-        }
-
-        let server = existingServer.data;
+        let server = existingServer;
 
         if (!server) {
-            const createdServer = await this.servers.create(
+            server = await this.servers.create(
                 guild.id,
                 guild.name
             );
-
-            if (createdServer.error || !createdServer.data) {
-                throw new Error("Failed to create or load server.");
-            }
-
-            server = createdServer.data;
 
             console.log(`Created server ${server.id}`);
         } else {
