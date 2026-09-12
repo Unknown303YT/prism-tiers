@@ -4,7 +4,7 @@ export class QueryBuilder {
 
     private readonly table: string;
 
-    private operation: "select" | "insert" | "update" | "delete" | "upsert" = "select";
+    private operation: "select" | "insert" | "update" | "delete" | "upsert" | undefined;
 
     private columns = "*";
 
@@ -26,7 +26,7 @@ export class QueryBuilder {
     }
 
     public select(columns = "*") {
-        this.operation = "select";
+        this.operation ??= "select";
 
         if (columns === "*") {
             this.columns = columns;
@@ -118,6 +118,9 @@ export class QueryBuilder {
 
                 case "upsert":
                     return await this.executeUpsert();
+
+                default:
+                    throw new Error("No query operation specified.");
             }
         } catch (error) {
             return {
