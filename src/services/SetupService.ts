@@ -48,6 +48,7 @@ export class SetupService {
         let server = existingServer;
 
         if (!server) {
+            console.log(`No existing server found for ${guild.id}, creating new server`);
             server = await this.servers.create(
                 guild.id,
                 guild.name
