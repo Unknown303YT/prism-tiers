@@ -12,6 +12,7 @@ export class ServerRepository extends BaseRepository {
             .single();
 
         if (error && (error as { code?: string }).code !== "NOT_FOUND") {
+            console.log("Error fetching server by Discord ID:", error);
             throw error;
         }
         
