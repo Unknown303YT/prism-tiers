@@ -11,7 +11,7 @@ export class ServerRepository extends BaseRepository {
             .eq("discord_guild_id", discordGuildId)
             .single();
 
-        if (error) {
+        if (error && (error as { code?: string }).code !== "NOT_FOUND") {
             throw error;
         }
         
