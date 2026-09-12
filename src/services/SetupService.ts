@@ -303,7 +303,7 @@ export class SetupService {
             throw new Error("No active setup session found.");
         }
 
-        return this.channels.create(serverId, type, key, channelId);
+        return this.channels.upsert(serverId, type, key, channelId);
     }
 
     private async getOrCreateCategory(guild: Guild, key: string, name: string): Promise<CategoryChannel> {

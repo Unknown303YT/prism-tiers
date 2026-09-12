@@ -1,15 +1,18 @@
 import { BaseRepository } from "./BaseRepository.js";
 
 export class ChannelRepository extends BaseRepository {
-    public async create(serverId: string, type: string, key: string, discordChannelId: string) {
+    public async upsert(serverId: string, type: string, key: string, discordChannelId: string) {
         const { data, error } = await this.db
             .from("server_channels")
-            .insert({
+            .upsert({
                 server_id: serverId,
-                type,
-                key,
+                type: type,
+                key: key,
                 discord_channel_id: discordChannelId
             })
+            .eq("server_id", serverId)
+            .eq("type", type)
+            .eq("key", key)
             .select()
             .single();
 
