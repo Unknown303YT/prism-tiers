@@ -80,7 +80,7 @@ export default class SetupForm extends MessageForm {
 
         await channel.send("Tier and Waitlist roles created. You may want to re-order them.");
 
-        const categories =await setup.createCategories(guild);
+        const categories = await setup.createCategories(guild);
 
         await channel.send("Categories created. Creating channels...");
 

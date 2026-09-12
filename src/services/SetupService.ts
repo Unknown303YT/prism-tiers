@@ -274,6 +274,8 @@ export class SetupService {
                 category.name
             );
 
+            console.log(`Created category ${category.name} (${created.id})`);
+
             categories[category.key] = created;
         }
 

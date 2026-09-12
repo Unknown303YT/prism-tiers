@@ -14,6 +14,7 @@ export class ChannelRepository extends BaseRepository {
             .single();
 
         if (error) {
+            console.error("ChannelRepository.create failed:", error);
             throw error;
         }
 
