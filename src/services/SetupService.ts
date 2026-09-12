@@ -14,6 +14,7 @@ import {
 import { ServerRepository } from "../repositories/ServerRepository.js";
 import { RoleRepository } from "../repositories/RoleRepository.js";
 import { ChannelRepository } from "../repositories/ChannelRepository.js";
+import { messageFormHandler } from "../services/MessageFormService.js";
 
 import {
     TIER_ROLES,
@@ -25,6 +26,7 @@ import {
     CATEGORIES,
     CHANNELS
 } from "../constants/channels.js"
+import SetupForm from "../interactions/messageForms/SetupForm.js";
 
 export class SetupService {
     private readonly servers = new ServerRepository();
@@ -116,20 +118,7 @@ export class SetupService {
             content: `${user}`
         });
 
-        await channel.send({
-
-            content:`# Welcome to PrismTiers setup!\n\nPlease mention the **Admin** role.`,
-
-            components: [
-                new ActionRowBuilder<ButtonBuilder>()
-                    .addComponents(
-                        new ButtonBuilder()
-                            .setCustomId("setup_cancel")
-                            .setLabel("Cancel Setup")
-                            .setStyle(ButtonStyle.Danger)
-                    )
-            ]
-        });
+        await messageFormHandler.startForm(new SetupForm(user.id, channel.id));
 
         return channel;
     }
