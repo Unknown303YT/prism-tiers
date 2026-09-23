@@ -353,6 +353,14 @@ export class SetupService {
 
         return existing;
     }
+
+    private getRole(guild: Guild, key: string) {
+        return guild.roles.cache.find(role => role.name === key);
+    }
+
+    private getChannelPermissions(guild: Guild, key: string, category: string) {
+        
+    }
 }
 
 export const setup = new SetupService();
