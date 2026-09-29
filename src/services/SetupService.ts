@@ -8,7 +8,9 @@ import {
     ButtonStyle,
     ActionRowBuilder,
     Role,
-    CategoryChannel
+    CategoryChannel,
+    OverwriteResolvable,
+    TextChannel
 } from "discord.js";
 
 import { ServerRepository } from "../repositories/ServerRepository.js";
@@ -25,13 +27,15 @@ import {
 import {
     CATEGORIES,
     CHANNELS
-} from "../constants/channels.js"
+} from "../constants/channels.js";
+
 import SetupForm from "../interactions/messageForms/SetupForm.js";
 
 export class SetupService {
     private readonly servers = new ServerRepository();
     private readonly roles = new RoleRepository();
     private readonly channels = new ChannelRepository();
+
     private sessions: Record<string, {
         serverId: string;
         interaction: ChatInputCommandInteraction;
@@ -51,6 +55,7 @@ export class SetupService {
 
         if (!server) {
             console.log(`No existing server found for ${guild.id}, creating new server`);
+
             server = await this.servers.create(
                 guild.id,
                 guild.name
@@ -81,12 +86,14 @@ export class SetupService {
         const channel = await guild.channels.create({
             name: "prismtiers-setup",
             type: ChannelType.GuildText,
-
             permissionOverwrites: [
                 {
                     id: guild.roles.everyone.id,
                     deny: [
-                        PermissionFlagsBits.ViewChannel
+                        PermissionFlagsBits.ViewChannel,
+                        PermissionFlagsBits.SendMessages,
+                        PermissionFlagsBits.ManageChannels,
+                        PermissionFlagsBits.ManageMessages
                     ]
                 },
                 {
@@ -94,6 +101,10 @@ export class SetupService {
                     allow: [
                         PermissionFlagsBits.ViewChannel,
                         PermissionFlagsBits.SendMessages
+                    ],
+                    deny: [
+                        PermissionFlagsBits.ManageChannels,
+                        PermissionFlagsBits.ManageMessages
                     ]
                 },
                 {
@@ -102,13 +113,14 @@ export class SetupService {
                         PermissionFlagsBits.ViewChannel,
                         PermissionFlagsBits.SendMessages,
                         PermissionFlagsBits.ManageChannels,
-                        PermissionFlagsBits.Administrator
+                        PermissionFlagsBits.ManageMessages
                     ]
                 }
             ]
         });
 
         this.sessions[guild.id].setupChannelId = channel.id;
+
         this.sessions[guild.id].waitingFor = {
             type: "staff",
             key: "admin"
@@ -118,86 +130,164 @@ export class SetupService {
             content: `${user}`
         });
 
-        await messageFormHandler.startForm(new SetupForm(user.id, channel.id));
+        await messageFormHandler.startForm(
+            new SetupForm(user.id, channel.id)
+        );
 
         return channel;
     }
 
     public async createTierRoles(guild: Guild) {
-        const createdRoles: Role[] = [];
+        const roles: Record<string, Role> = {};
 
         for (const tier of TIER_ROLES) {
+            const key = tier.name
+                .replace(" Tier", "")
+                .toLowerCase();
+
             const role = await this.getOrCreateRole(guild, {
                 name: tier.name,
                 color: tier.color,
                 hoist: true,
-                reason: "PrismTiers tier role"
+                reason: "PrismTiers setup"
             });
 
-            if (!role) {
-                throw new Error(`Failed to create or find role ${tier.name}`);
-            }
+            await this.saveRole(
+                guild.id,
+                "tier",
+                key,
+                role.id
+            );
 
-            await this.saveRole(guild.id, "tier", tier.name, role.id);
-
-            createdRoles.push(role);
+            roles[key] = role;
         }
 
-        console.log("Tier roles created");
+        await this.orderTierRoles(guild, roles);
 
-        return createdRoles;
+        return roles;
     }
 
     public async createWaitlistRoles(guild: Guild) {
-        for (const gamemode of WAITLIST_ROLES) {
-            const name =`${gamemode} Waitlist`;
+        const roles: Record<string, Role> = {};
 
+        for (const waitlist of WAITLIST_ROLES) {
             const role = await this.getOrCreateRole(guild, {
-                name: name,
-                hoist: false,
-                reason: "PrismTiers waitlist role"
+                name: waitlist.name,
+                reason: "PrismTiers setup"
             });
 
-            await this.saveRole(guild.id, "waitlist", gamemode, role.id);
+            await this.saveRole(
+                guild.id,
+                "waitlist",
+                waitlist.key,
+                role.id
+            );
+
+            roles[waitlist.key] = role;
         }
+
+        return roles;
     }
 
     public async createStaffRoles(guild: Guild) {
-        const serverId = this.getServerId(guild.id);
+        const roles: Record<string, Role> = {};
 
-        console.log(`Creating staff roles for ${guild.id}, database id: ${serverId}`);
-
-        if (!serverId) {
-            throw new Error(
-                "No active setup session found."
-            );
-        }
-
-        for (const staffRole of STAFF_ROLES) {
+        for (const staff of STAFF_ROLES) {
             const role = await this.getOrCreateRole(guild, {
-                name: staffRole.name,
-                color: staffRole.color,
+                name: staff.name,
+                color: staff.color,
                 hoist: true,
-                reason: "PrismTiers staff role"
+                reason: "PrismTiers setup"
             });
 
-            await this.saveRole(guild.id!, "staff", staffRole.key, role.id);
+            await this.saveRole(
+                guild.id,
+                "staff",
+                staff.key,
+                role.id
+            );
+
+            roles[staff.key] = role;
+        }
+
+        return roles;
+    }
+
+    private getWaitlistKey(name: string) {
+        return name
+            .toLowerCase()
+            .replace(/\s+/g, "")
+            .replace("diamondsmp", "diasmp")
+            .replace("spearmace", "spear-mace")
+            .replace("diapot", "diapot");
+    }
+
+    private async orderTierRoles(
+        guild: Guild,
+        roles: Record<string, Role>
+    ) {
+        const orderedRoles = TIER_ROLES
+            .map(tier => {
+                const key = tier.name
+                    .replace(" Tier", "")
+                    .toLowerCase();
+
+                return roles[key];
+            })
+            .filter(Boolean);
+
+        let position = guild.roles.highest.position - 1;
+
+        for (const role of orderedRoles) {
+            if (position <= 0) {
+                break;
+            }
+
+            await role.setPosition(position);
+            position--;
         }
     }
 
-    private async getOrCreateRole(guild: Guild, options: {
+    public async saveRole(
+        guildId: string,
+        type: string,
+        key: string,
+        roleId: string
+    ) {
+        const serverId = this.getServerId(guildId);
+
+        if (!serverId) {
+            throw new Error("No active setup session found.");
+        }
+
+        return this.roles.create(
+            serverId,
+            type,
+            key,
+            roleId
+        );
+    }
+
+    private async getOrCreateRole(
+        guild: Guild,
+        options: {
             name: string;
             color?: number;
             hoist?: boolean;
             reason: string;
-        }): Promise<Role> {
-        let role = guild.roles.cache.find(existing => existing.name === options.name);
+        }
+    ): Promise<Role> {
+        let role = guild.roles.cache.find(
+            existing => existing.name === options.name
+        );
 
         if (!role) {
             role = await guild.roles.create({
                 name: options.name,
                 colors: options.color
-                    ? { primaryColor: options.color }
+                    ? {
+                        primaryColor: options.color
+                    }
                     : undefined,
                 hoist: options.hoist ?? false,
                 reason: options.reason
@@ -207,64 +297,9 @@ export class SetupService {
         return role;
     }
 
-    public async saveRole(guildId: string, type: string, key: string, roleId: string) {
-        const serverId = this.getServerId(guildId);
-
-        if (!serverId) {
-            throw new Error("No active setup session found.");
-        }
-
-        return this.roles.create(serverId, type, key, roleId);
-    }
-
-    public getWaitingFor(guildId: string) {
-        return this.sessions[guildId]?.waitingFor;
-    }
-
-    public setWaitingFor(guildId: string, type: string, key: string) {
-        this.sessions[guildId].waitingFor = {
-            type,
-            key
-        };
-    }
-
-    public async cancel(guildId: string) {
-        const session = this.sessions[guildId];
-
-        if (!session) {
-            return;
-        }
-
-        delete this.sessions[guildId];
-    }
-
-    public async finish(guildId: string) {
-        const session = this.sessions[guildId];
-
-        if (!session) {
-            return;
-        }
-
-        delete this.sessions[guildId];
-
-        await this.servers.completeSetup(session.serverId);
-
-        return session.setupChannelId;
-    }
-
-    public async deleteSetupChannel(guild: Guild) {
-        const channelId = this.sessions[guild.id]?.setupChannelId;
-
-        if (!channelId) {
-            return;
-        }
-
-        const channel = guild.channels.cache.get(channelId);
-
-        await channel?.delete();
-    }
-
-    public async createCategories(guild: Guild) {
+    public async createCategories(
+        guild: Guild
+    ) {
         const categories: Record<string, CategoryChannel> = {};
 
         for (const category of CATEGORIES) {
@@ -274,7 +309,9 @@ export class SetupService {
                 category.name
             );
 
-            console.log(`Created category ${category.name} (${created.id})`);
+            console.log(
+                `Created category ${category.name} (${created.id})`
+            );
 
             categories[category.key] = created;
         }
@@ -282,33 +319,57 @@ export class SetupService {
         return categories;
     }
 
-    public async createChannels(guild: Guild, categories: Record<string, CategoryChannel>) {
+    public async createChannels(
+        guild: Guild,
+        categories: Record<string, CategoryChannel>
+    ) {
         for (const channel of CHANNELS) {
-            const type = channel.type as CreateableChannelType;
+            const parent = categories[channel.category];
+
+            if (!parent) {
+                throw new Error(
+                    `Category ${channel.category} does not exist.`
+                );
+            }
 
             await this.getOrCreateChannel(
                 guild,
                 channel.key,
                 channel.name,
-                type,
-                categories[channel.category]?.id
+                parent
             );
         }
     }
 
-    private async saveChannel(guildId: string, type: string, key: string, channelId: string) {
+    private async saveChannel(
+        guildId: string,
+        type: string,
+        key: string,
+        channelId: string
+    ) {
         const serverId = this.getServerId(guildId);
 
         if (!serverId) {
             throw new Error("No active setup session found.");
         }
 
-        return this.channels.upsert(serverId, type, key, channelId);
+        return this.channels.upsert(
+            serverId,
+            type,
+            key,
+            channelId
+        );
     }
 
-    private async getOrCreateCategory(guild: Guild, key: string, name: string): Promise<CategoryChannel> {
+    private async getOrCreateCategory(
+        guild: Guild,
+        key: string,
+        name: string
+    ): Promise<CategoryChannel> {
         let category = guild.channels.cache.find(
-            channel => channel.type === ChannelType.GuildCategory && channel.name === name
+            channel =>
+                channel.type === ChannelType.GuildCategory &&
+                channel.name === name
         ) as CategoryChannel | undefined;
 
         if (!category) {
@@ -318,6 +379,13 @@ export class SetupService {
                 reason: "PrismTiers setup"
             }) as CategoryChannel;
         }
+
+        await category.permissionOverwrites.set(
+            await this.getCategoryPermissions(
+                guild,
+                key
+            )
+        );
 
         await this.saveChannel(
             guild.id,
@@ -333,44 +401,451 @@ export class SetupService {
         guild: Guild,
         key: string,
         name: string,
-        type: CreateableChannelType,
-        parent?: string
+        category: CategoryChannel
     ) {
-        let existing = guild.channels.cache.find(
-            c => c.name === name && c.type === type
+        const serverId = this.getServerId(guild.id);
+
+        if (!serverId) {
+            throw new Error("No active setup session found.");
+        }
+
+        const savedChannel = await this.channels.get(
+            serverId,
+            "channel",
+            key
         );
 
-        if (!existing) {
-            existing = await guild.channels.create({
+        let channel = savedChannel
+            ? guild.channels.cache.get(savedChannel.data.discord_channel_id) as TextChannel | undefined
+            : undefined;
+
+        if (!channel) {
+            channel = await guild.channels.create({
                 name,
-                type,
-                parent,
+                type: ChannelType.GuildText,
+                parent: category.id,
                 reason: "PrismTiers setup"
             });
         }
 
-        await this.saveChannel(guild.id, "channel", key, existing.id);
+        if (channel.parentId !== category.id) {
+            await channel.setParent(category.id);
+        }
 
-        return existing;
+        await channel.permissionOverwrites.set(
+            await this.getChannelPermissions(guild, key)
+        );
+
+        await this.saveChannel(
+            guild.id,
+            "channel",
+            key,
+            channel.id
+        );
+
+        return channel;
     }
 
-    private getRole(guild: Guild, key: string) {
-        return guild.roles.cache.find(role => role.name === key);
+    private async getCategoryPermissions(
+        guild: Guild,
+        category: string
+    ): Promise<OverwriteResolvable[]> {
+        const serverId = this.getServerId(guild.id);
+
+        if (!serverId) {
+            throw new Error("No active setup session found.");
+        }
+
+        const everyone = guild.roles.everyone.id;
+
+        const admin = await this.roles.get(
+            serverId,
+            "staff",
+            "admin"
+        );
+
+        const tester = await this.roles.get(
+            serverId,
+            "staff",
+            "tester"
+        );
+
+        switch (category) {
+            case "main":
+            case "results":
+                return [
+                    {
+                        id: everyone,
+                        allow: [
+                            PermissionFlagsBits.ViewChannel
+                        ],
+                        deny: [
+                            PermissionFlagsBits.SendMessages,
+                            PermissionFlagsBits.ManageChannels,
+                            PermissionFlagsBits.ManageMessages
+                        ]
+                    },
+                    {
+                        id: tester.discord_role_id,
+                        allow: [
+                            PermissionFlagsBits.ViewChannel
+                        ],
+                        deny: [
+                            PermissionFlagsBits.SendMessages,
+                            PermissionFlagsBits.ManageChannels,
+                            PermissionFlagsBits.ManageMessages
+                        ]
+                    },
+                    {
+                        id: admin.discord_role_id,
+                        allow: [
+                            PermissionFlagsBits.ViewChannel,
+                            PermissionFlagsBits.SendMessages,
+                            PermissionFlagsBits.ManageChannels,
+                            PermissionFlagsBits.ManageMessages
+                        ]
+                    }
+                ];
+
+            case "admin":
+            case "testing":
+                return [
+                    {
+                        id: everyone,
+                        deny: [
+                            PermissionFlagsBits.ViewChannel,
+                            PermissionFlagsBits.SendMessages,
+                            PermissionFlagsBits.ManageChannels,
+                            PermissionFlagsBits.ManageMessages
+                        ]
+                    },
+                    {
+                        id: tester.discord_role_id,
+                        allow: [
+                            PermissionFlagsBits.ViewChannel
+                        ],
+                        deny: [
+                            PermissionFlagsBits.SendMessages,
+                            PermissionFlagsBits.ManageChannels,
+                            PermissionFlagsBits.ManageMessages
+                        ]
+                    },
+                    {
+                        id: admin.discord_role_id,
+                        allow: [
+                            PermissionFlagsBits.ViewChannel,
+                            PermissionFlagsBits.SendMessages,
+                            PermissionFlagsBits.ManageChannels,
+                            PermissionFlagsBits.ManageMessages
+                        ]
+                    }
+                ];
+
+            default:
+                throw new Error(
+                    `Unknown category: ${category}`
+                );
+        }
     }
 
-    private getChannelPermissions(guild: Guild, key: string, category: string) {
-        
+    private async getChannelPermissions(
+        guild: Guild,
+        key: string
+    ): Promise<OverwriteResolvable[]> {
+        const serverId = this.getServerId(guild.id);
+
+        if (!serverId) {
+            throw new Error("No active setup session found.");
+        }
+
+        const everyone = guild.roles.everyone.id;
+
+        const admin = await this.roles.get(
+            serverId,
+            "staff",
+            "admin"
+        );
+
+        const tester = await this.roles.get(
+            serverId,
+            "staff",
+            "tester"
+        );
+
+        const bot = guild.members.me;
+
+        if (!bot) {
+            throw new Error("Bot member could not be found.");
+        }
+
+        const botId = bot.id;
+
+        /*
+         * WAITLIST
+         *
+         * Everyone:
+         * - Can see
+         * - Cannot type
+         * - Cannot manage
+         *
+         * Admin:
+         * - Full access
+         *
+         * Bot:
+         * - Full access
+         */
+        if (key === "waitlist") {
+            return [
+                {
+                    id: everyone,
+                    allow: [
+                        PermissionFlagsBits.ViewChannel
+                    ],
+                    deny: [
+                        PermissionFlagsBits.SendMessages,
+                        PermissionFlagsBits.ManageChannels,
+                        PermissionFlagsBits.ManageMessages
+                    ]
+                },
+                {
+                    id: admin.discord_role_id,
+                    allow: [
+                        PermissionFlagsBits.ViewChannel,
+                        PermissionFlagsBits.SendMessages,
+                        PermissionFlagsBits.ManageChannels,
+                        PermissionFlagsBits.ManageMessages
+                    ]
+                },
+                {
+                    id: botId,
+                    allow: [
+                        PermissionFlagsBits.ViewChannel,
+                        PermissionFlagsBits.SendMessages,
+                        PermissionFlagsBits.ManageChannels,
+                        PermissionFlagsBits.ManageMessages
+                    ]
+                }
+            ];
+        }
+
+        /*
+         * RESULTS CHANNELS
+         *
+         * Everyone:
+         * - Can see
+         * - Cannot type
+         * - Cannot manage
+         *
+         * Admin:
+         * - Can see
+         * - Cannot type
+         * - Can manage
+         *
+         * Bot:
+         * - Full access
+         */
+        if (key.endsWith("_results")) {
+            return [
+                {
+                    id: everyone,
+                    allow: [
+                        PermissionFlagsBits.ViewChannel
+                    ],
+                    deny: [
+                        PermissionFlagsBits.SendMessages,
+                        PermissionFlagsBits.ManageChannels,
+                        PermissionFlagsBits.ManageMessages
+                    ]
+                },
+                {
+                    id: tester.discord_role_id,
+                    allow: [
+                        PermissionFlagsBits.ViewChannel
+                    ],
+                    deny: [
+                        PermissionFlagsBits.SendMessages,
+                        PermissionFlagsBits.ManageChannels,
+                        PermissionFlagsBits.ManageMessages
+                    ]
+                },
+                {
+                    id: admin.discord_role_id,
+                    allow: [
+                        PermissionFlagsBits.ViewChannel,
+                        PermissionFlagsBits.ManageChannels,
+                        PermissionFlagsBits.ManageMessages
+                    ],
+                    deny: [
+                        PermissionFlagsBits.SendMessages
+                    ]
+                },
+                {
+                    id: botId,
+                    allow: [
+                        PermissionFlagsBits.ViewChannel,
+                        PermissionFlagsBits.SendMessages,
+                        PermissionFlagsBits.ManageChannels,
+                        PermissionFlagsBits.ManageMessages
+                    ]
+                }
+            ];
+        }
+
+        /*
+         * ADMIN CHANNELS
+         *
+         * Everyone:
+         * - Cannot see
+         * - Cannot type
+         * - Cannot manage
+         *
+         * Tester:
+         * - Can see
+         * - Cannot type
+         * - Cannot manage
+         *
+         * Admin:
+         * - Full access
+         *
+         * Bot:
+         * - Full access
+         */
+        if (
+            key === "logs" ||
+            key === "test-management"
+        ) {
+            return [
+                {
+                    id: everyone,
+                    deny: [
+                        PermissionFlagsBits.ViewChannel,
+                        PermissionFlagsBits.SendMessages,
+                        PermissionFlagsBits.ManageChannels,
+                        PermissionFlagsBits.ManageMessages
+                    ]
+                },
+                {
+                    id: tester.discord_role_id,
+                    allow: [
+                        PermissionFlagsBits.ViewChannel
+                    ],
+                    deny: [
+                        PermissionFlagsBits.SendMessages,
+                        PermissionFlagsBits.ManageChannels,
+                        PermissionFlagsBits.ManageMessages
+                    ]
+                },
+                {
+                    id: admin.discord_role_id,
+                    allow: [
+                        PermissionFlagsBits.ViewChannel,
+                        PermissionFlagsBits.SendMessages,
+                        PermissionFlagsBits.ManageChannels,
+                        PermissionFlagsBits.ManageMessages
+                    ]
+                },
+                {
+                    id: botId,
+                    allow: [
+                        PermissionFlagsBits.ViewChannel,
+                        PermissionFlagsBits.SendMessages,
+                        PermissionFlagsBits.ManageChannels,
+                        PermissionFlagsBits.ManageMessages
+                    ]
+                }
+            ];
+        }
+
+        /*
+         * GAMEMODE CHANNELS
+         *
+         * The channel key itself is the waitlist-role key.
+         *
+         * Example:
+         *
+         * #sword
+         *   -> role "Sword"
+         *   -> role stored as type="waitlist", key="sword"
+         *
+         * Everyone:
+         * - Cannot see
+         * - Cannot type
+         * - Cannot manage
+         *
+         * Waitlisted players:
+         * - Can see
+         * - Cannot type
+         * - Cannot manage
+         *
+         * Testers:
+         * - Can see
+         * - Cannot type
+         * - Cannot manage
+         *
+         * Admin:
+         * - Full access
+         *
+         * Bot:
+         * - Full access
+         */
+        const waitlistRole = await this.roles.get(
+            serverId,
+            "waitlist",
+            key
+        );
+
+        return [
+            {
+                id: everyone,
+                deny: [
+                    PermissionFlagsBits.ViewChannel,
+                    PermissionFlagsBits.SendMessages,
+                    PermissionFlagsBits.ManageChannels,
+                    PermissionFlagsBits.ManageMessages
+                ]
+            },
+            {
+                id: waitlistRole.discord_role_id,
+                allow: [
+                    PermissionFlagsBits.ViewChannel
+                ],
+                deny: [
+                    PermissionFlagsBits.SendMessages,
+                    PermissionFlagsBits.ManageChannels,
+                    PermissionFlagsBits.ManageMessages
+                ]
+            },
+            {
+                id: tester.discord_role_id,
+                allow: [
+                    PermissionFlagsBits.ViewChannel
+                ],
+                deny: [
+                    PermissionFlagsBits.SendMessages,
+                    PermissionFlagsBits.ManageChannels,
+                    PermissionFlagsBits.ManageMessages
+                ]
+            },
+            {
+                id: admin.discord_role_id,
+                allow: [
+                    PermissionFlagsBits.ViewChannel,
+                    PermissionFlagsBits.SendMessages,
+                    PermissionFlagsBits.ManageChannels,
+                    PermissionFlagsBits.ManageMessages
+                ]
+            },
+            {
+                id: botId,
+                allow: [
+                    PermissionFlagsBits.ViewChannel,
+                    PermissionFlagsBits.SendMessages,
+                    PermissionFlagsBits.ManageChannels,
+                    PermissionFlagsBits.ManageMessages
+                ]
+            }
+        ];
     }
 }
 
 export const setup = new SetupService();
-
-type CreateableChannelType =
-    | ChannelType.GuildText
-    | ChannelType.GuildVoice
-    | ChannelType.GuildCategory
-    | ChannelType.GuildAnnouncement
-    | ChannelType.GuildStageVoice
-    | ChannelType.GuildDirectory
-    | ChannelType.GuildForum
-    | ChannelType.GuildMedia;

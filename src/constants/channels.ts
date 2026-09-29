@@ -2,89 +2,137 @@ import { ChannelType } from "discord.js";
 
 export const CATEGORIES = [
     {
-        key: "waitlists",
-        name: "Waitlists"
+        key: "main",
+        name: "PrismTiers"
     },
     {
         key: "results",
-        name: "Results"
+        name: "PrismTiers Results"
     },
     {
         key: "testing",
         name: "Testing"
     },
     {
-        key: "staff",
-        name: "Staff"
+        key: "admin",
+        name: "PrismTiers Admin"
     }
 ] as const;
 
 export const CHANNELS = [
     {
         key: "waitlist",
-        name: "waitlist",
-        category: "waitlists",
+        name: "request-test",
+        category: "main",
         type: ChannelType.GuildText
     },
 
     {
         key: "sword",
-        name: "sword",
-        category: "waitlists",
+        name: "sword-waitlist",
+        category: "main",
         type: ChannelType.GuildText
     },
     {
         key: "crystal",
-        name: "crystal",
-        category: "waitlists",
+        name: "crystal-waitlist",
+        category: "main",
         type: ChannelType.GuildText
     },
     {
         key: "uhc",
-        name: "uhc",
-        category: "waitlists",
+        name: "uhc-waitlist",
+        category: "main",
         type: ChannelType.GuildText
     },
     {
         key: "smp",
-        name: "smp",
-        category: "waitlists",
+        name: "smp-waitlist",
+        category: "main",
         type: ChannelType.GuildText
     },
     {
         key: "mace",
-        name: "mace",
-        category: "waitlists",
+        name: "mace-waitlist",
+        category: "main",
         type: ChannelType.GuildText
     },
     {
         key: "diapot",
-        name: "diapot",
-        category: "waitlists",
+        name: "diamond-pot-waitlist",
+        category: "main",
         type: ChannelType.GuildText
     },
     {
         key: "axe",
-        name: "axe",
-        category: "waitlists",
+        name: "axe-waitlist",
+        category: "main",
         type: ChannelType.GuildText
     },
     {
         key: "diasmp",
-        name: "diasmp",
-        category: "waitlists",
+        name: "diamond-smp-waitlist",
+        category: "main",
         type: ChannelType.GuildText
     },
     {
         key: "spear_mace",
-        name: "spear-mace",
-        category: "waitlists",
+        name: "spear-mace-waitlist",
+        category: "main",
         type: ChannelType.GuildText
     },
 
     {
-        key: "results",
-        name: "results",
+        key: "sword_results",
+        name: "sword",
+        category: "results",
+        type: ChannelType.GuildText
+    },
+    {
+        key: "crystal_results",
+        name: "crystal",
+        category: "results",
+        type: ChannelType.GuildText
+    },
+    {
+        key: "uhc_results",
+        name: "uhc",
+        category: "results",
+        type: ChannelType.GuildText
+    },
+    {
+        key: "smp_results",
+        name: "smp",
+        category: "results",
+        type: ChannelType.GuildText
+    },
+    {
+        key: "mace_results",
+        name: "mace",
+        category: "results",
+        type: ChannelType.GuildText
+    },
+    {
+        key: "diapot_results",
+        name: "diapot",
+        category: "results",
+        type: ChannelType.GuildText
+    },
+    {
+        key: "axe_results",
+        name: "axe",
+        category: "results",
+        type: ChannelType.GuildText
+    },
+    {
+        key: "diasmp_results",
+        name: "diasmp",
+        category: "results",
+        type: ChannelType.GuildText
+    },
+    {
+        key: "spear_mace_results",
+        name: "spear-mace",
         category: "results",
         type: ChannelType.GuildText
     },
@@ -92,7 +140,13 @@ export const CHANNELS = [
     {
         key: "logs",
         name: "logs",
-        category: "staff",
+        category: "admin",
+        type: ChannelType.GuildText
+    },
+    {
+        key: "test_management",
+        name: "test-management",
+        category: "admin",
         type: ChannelType.GuildText
     }
 ] as const;

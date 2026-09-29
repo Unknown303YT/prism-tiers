@@ -30,15 +30,15 @@ export const TIER_ROLES = [
 ] as const;
 
 export const WAITLIST_ROLES = [
-    "Sword",
-    "Crystal",
-    "UHC",
-    "SMP",
-    "Mace",
-    "DiaPot",
-    "Axe",
-    "DiaSMP",
-    "Spear Mace"
+    { key: "sword", name: "Sword" },
+    { key: "crystal", name: "Crystal" },
+    { key: "uhc", name: "UHC" },
+    { key: "smp", name: "SMP" },
+    { key: "mace", name: "Mace" },
+    { key: "diapot", name: "Diamond Pot" },
+    { key: "axe", name: "Axe" },
+    { key: "diasmp", name: "Diamond SMP" },
+    { key: "spear-mace", name: "Spear Mace" }
 ] as const;
 export const STAFF_ROLES = [
     {

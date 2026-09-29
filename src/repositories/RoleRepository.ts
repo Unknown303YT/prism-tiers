@@ -22,4 +22,20 @@ export class RoleRepository extends BaseRepository {
 
         return data;
     }
+
+    public async get(serverId: string, type: string, key: string) {
+        const { data, error } = await this.db
+            .from("server_roles")
+            .select("*")
+            .eq("server_id", serverId)
+            .eq("type", type)
+            .eq("key", key)
+            .single();
+
+        if (error) {
+            throw error;
+        }
+
+        return data;
+    }
 }
